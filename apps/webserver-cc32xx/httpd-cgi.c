@@ -49,6 +49,8 @@
 #include "httpd-cgi.h"
 #include "httpd-fs.h"
 
+
+#include "apps/udp_server.h"
 #include "dev/leds.h"
 
 
@@ -101,6 +103,10 @@ static const char proc_name[] = /*  "processes"*/
  0x65, 0x73, 0};
 static const char togglegreen_name[] = /*  "togglegreen"*/
 {0x74, 0x6f, 0x67, 0x67, 0x6c, 0x65, 0x67, 0x72, 0x65, 0x65, 0x6e, 0};
+static const char   nbrs_name[] = /*  "neighbors"*/
+{0x6e, 0x65, 0x69, 0x67, 0x68, 0x62, 0x6f, 0x72, 0x73, 0};
+static const char   send_name[] = /*  "send"*/
+{0x73, 0x65, 0x6e, 0x64, 0};
 
 static const char *states[] = {
   closed,
@@ -115,6 +121,7 @@ static const char *states[] = {
   none,
   running,
   called};
+
 
 /*---------------------------------------------------------------------------*/
 static
@@ -354,6 +361,99 @@ PT_THREAD(toggle_led())
 	leds_toggle(LEDS_GREEN);
 }
 /*---------------------------------------------------------------------------*/
+
+char ipAddrStr[64];
+
+static
+PT_THREAD(send_toggle(struct httpd_state *s, char *ptr))
+{
+	PSOCK_BEGIN(&s->sout);
+
+	sscanf(httpd_query, "ip=%s", &ipAddrStr[0]);
+	strcat(ipAddrStr, '\0');
+
+	messageToAll(&ipAddrStr[0]);
+
+	PSOCK_END(&s->sout);
+}
+/*---------------------------------------------------------------------------*/
+#define HTTPD_STRING_ATTR
+#define httpd_snprintf snprintf
+#define httpd_cgi_sprint_ip6 httpd_sprint_ip6
+
+static const char httpd_cgi_addrh[] HTTPD_STRING_ATTR = "<code>";
+static const char httpd_cgi_addrb[] HTTPD_STRING_ATTR = "<br>";
+
+static unsigned short
+codeBegin(void *p)
+{
+	uint16_t numprinted;
+
+	numprinted = httpd_snprintf((char *)uip_appdata, uip_mss(),"[");
+
+	return numprinted;
+}
+
+neighborList tmp;
+
+static unsigned short
+make_neighbors(void *p)
+{
+	struct httpd_state *s=p;
+	uint8_t i,j;
+
+	uint16_t numprinted = 0;
+
+
+
+	i=s->starti;j=s->startj;
+
+	for (; tmp != NULL; tmp = tmp->next, i++)
+	{
+		if(numprinted > (uip_mss() - 20)) {
+			s->savei=i;s->savej=j;
+			return numprinted;
+		}
+
+		j++;
+
+		numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_appdata + numprinted, "\"");
+		numprinted += httpd_cgi_sprint_ip6(tmp->ipaddr, uip_appdata + numprinted);
+		numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_appdata + numprinted, "\"");
+
+		if (tmp->next)
+		{
+			numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_appdata + numprinted, ", ");
+		}
+		else
+		{
+			numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_appdata + numprinted, "]");
+
+			s->savei = 0;
+			return numprinted;
+		}
+	}
+}
+
+/*---------------------------------------------------------------------------*/
+static
+PT_THREAD(neighbors(struct httpd_state *s, char *ptr))
+{
+	PSOCK_BEGIN(&s->sout);
+
+	tmp = neighbor_list;
+
+	PSOCK_GENERATOR_SEND(&s->sout, codeBegin, (void *)s);
+
+	s->starti=0;
+	do {
+	PSOCK_GENERATOR_SEND(&s->sout, make_neighbors, (void *)s);
+	s->starti=s->savei+1;s->startj=s->savej;
+	} while(s->savei);
+
+	PSOCK_END(&s->sout);
+}
+/*---------------------------------------------------------------------------*/
 void
 httpd_cgi_add(struct httpd_cgi_call *c)
 {
@@ -377,9 +477,10 @@ HTTPD_CGI_CALL(file, file_name, file_stats);
 HTTPD_CGI_CALL(tcp, tcp_name, tcp_stats);
 HTTPD_CGI_CALL(proc, proc_name, processes);
 HTTPD_CGI_CALL(togglegreen, togglegreen_name, toggle_led);
+HTTPD_CGI_CALL(nbrs, nbrs_name, neighbors);
+HTTPD_CGI_CALL(send, send_name, send_toggle);
 #if WEBSERVER_CONF_STATUSPAGE && NETSTACK_CONF_WITH_IPV6
 HTTPD_CGI_CALL(adrs, adrs_name, addresses);
-HTTPD_CGI_CALL(nbrs, nbrs_name, neighbors);
 HTTPD_CGI_CALL(rtes, rtes_name, routes);
 #endif
 
@@ -390,9 +491,10 @@ httpd_cgi_init(void)
   httpd_cgi_add(&tcp);
   httpd_cgi_add(&proc);
   httpd_cgi_add(&togglegreen);
+  httpd_cgi_add(&nbrs);
+  httpd_cgi_add(&send);
 #if WEBSERVER_CONF_STATUSPAGE && NETSTACK_CONF_WITH_IPV6
   httpd_cgi_add(&adrs);
-  httpd_cgi_add(&nbrs);
   httpd_cgi_add(&rtes);
 #endif
 }

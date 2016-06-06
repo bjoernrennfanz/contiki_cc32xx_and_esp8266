@@ -34,7 +34,6 @@
 #ifndef HTTPD_H_
 #define HTTPD_H_
 
-
 #include "contiki-net.h"
 #include "httpd-fs.h"
 
@@ -47,6 +46,8 @@ struct httpd_state {
   char state;
   struct httpd_fs_file file;  
   int len;
+  uint8_t starti,savei,startj,savej;
+  uint16_t ajax_timeout;
   char *scriptptr;
   int scriptlen;
   union {
@@ -55,6 +56,7 @@ struct httpd_state {
   } u;
 };
 
+char httpd_query[64];
 
 void httpd_init(void);
 void httpd_appcall(void *state);
