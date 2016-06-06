@@ -1,0 +1,349 @@
+#******************************************************************************
+#
+# Makefile - Rules for building the CC32xx cpu files.
+#
+# Copyright (c) 2015, 3B Scientific GmbH.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. Neither the name of the Institute nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+# This file is part of the Contiki operating system.
+#
+# Author: Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
+#
+#******************************************************************************
+
+#
+# Get the prefix for the tools to use.  Use arm-stellaris-eabi if it exists,
+# otherwise fall back to arm-none-eabi.
+#
+PREFIX:=${shell type arm-stellaris-eabi-gcc > /dev/null 2>&1 && \
+         echo arm-stellaris-eabi || echo arm-none-eabi}
+
+#
+# The command for calling the c compiler.
+#
+CC=$(PREFIX)-gcc
+
+#
+# The command for calling the cpp compiler.
+#
+CPP=$(PREFIX)-cpp
+
+#
+# The location of the C compiler
+# ARMGCC_ROOT is used by some makefiles that need to know where the compiler
+# is installed.
+#
+ARMGCC_ROOT:=${shell dirname '${shell sh -c "which ${CC}"}'}/..
+
+#
+# The command for calling the library archiver.
+#
+AR=$(PREFIX)-ar
+
+#
+# The command for calling the linker.
+#
+LD=$(PREFIX)-ld
+
+#
+# The command for calling objcopy.
+#
+OBJCOPY=$(PREFIX)-objcopy
+
+#
+# The command for calling objdump.
+#
+OBJDUMP=$(PREFIX)-objdump
+
+#
+# The command for calling nm.
+#
+NM=$(PREFIX)-nm
+
+#
+# The source for linker script generation
+#
+ifndef SOURCE_LDSCRIPT
+SOURCE_LDSCRIPT = $(CONTIKI_CPU)/cc32xx.lds
+endif
+LDSCRIPT = $(OBJECTDIR)/cc32xx.ld
+
+#
+# The root of TI CC32xx SDK
+#
+ifndef CC32XX_SDK_ROOT
+CC32XX_SDK_ROOT = ../../../ti-cc3200-sdk
+endif
+
+#
+# The common includes of TI CC32xx SDK
+#
+CC32XX_SDK_INC_DIR = $(CC32XX_SDK_ROOT)/inc
+
+#
+# The driverlib of TI CC32xx SDK
+#
+CC32XX_SDK_DRIVERLIB_DIR = $(CC32XX_SDK_ROOT)/driverlib
+
+ifneq "$(wildcard $(CONTIKI_CPU)/$(CC32XX_SDK_DRIVERLIB_DIR)/src )" ""
+CC32XX_SDK_DRIVERLIB_INC_DIR = $(CC32XX_SDK_DRIVERLIB_DIR)/src
+else
+CC32XX_SDK_DRIVERLIB_INC_DIR = $(CC32XX_SDK_DRIVERLIB_DIR)
+endif
+
+#
+# The oslib of TI CC32xx SDK
+#
+CC32XX_SDK_OSLIB_DIR = $(CC32XX_SDK_ROOT)/oslib
+
+ifneq "$(wildcard $(CONTIKI_CPU)/$(CC32XX_SDK_OSLIB_DIR)/src )" ""
+CC32XX_SDK_OSLIB_INC_DIR = $(CC32XX_SDK_OSLIB_DIR)/src
+else
+CC32XX_SDK_OSLIB_INC_DIR = $(CC32XX_SDK_OSLIB_DIR)
+endif
+
+#
+# The simplelink driver of TI CC32xx SDK
+#
+CC32XX_SDK_SIMPLELINK_DIR = $(CC32XX_SDK_ROOT)/simplelink
+
+ifneq "$(wildcard $(CONTIKI_CPU)/$(CC32XX_SDK_SIMPLELINK_DIR)/src )" ""
+CC32XX_SDK_SIMPLELINK_INC_DIR = $(CC32XX_SDK_SIMPLELINK_DIR)/src
+else
+CC32XX_SDK_SIMPLELINK_INC_DIR = $(CC32XX_SDK_SIMPLELINK_DIR)
+endif
+
+#
+# Set the compiler CPU/FPU options.
+#
+CPU=-mcpu=cortex-m4
+#FPU=-mfpu=fpv4-sp-d16 -mfloat-abi=softfp
+
+#
+# The flags passed to the compiler.
+#
+CFLAGS += $(CPU) $(FPU) -mthumb -mlittle-endian
+CFLAGS += -ffunction-sections -fdata-sections
+CFLAGS += -fshort-enums -fomit-frame-pointer -fno-strict-aliasing
+CFLAGS += -Wall -Dgcc
+
+#
+# Set additional compiler flags
+ifeq ($(CC32XX_NONOS),1)
+CFLAGS += -DUSE_NONOS
+else
+CFLAGS += -DUSE_FREERTOS
+CFLAGS += -DSL_PLATFORM_MULTI_THREADED
+endif
+
+#
+# The flags passed to the linker.
+#
+LDFLAGS += -T $(LDSCRIPT)
+LDFLAGS += --gc-sections --sort-section=alignment
+LDFLAGS += -Map=$(@:.elf=-$(TARGET).map) --cref --no-warn-mismatch
+
+#
+# Get the location of libgcc.a from the GCC front-end.
+#
+LIBGCC:=${shell ${CC} -mthumb ${CFLAGS} -print-libgcc-file-name}
+
+#
+# Get the location of libc.a from the GCC front-end.
+#
+LIBC:=${shell ${CC} ${CFLAGS} -print-file-name=libc.a}
+
+#
+# Get the location of libm.a from the GCC front-end.
+#
+LIBM:=${shell ${CC} ${CFLAGS} -print-file-name=libm.a}
+
+#
+# The flags passed to obj-copy.
+#
+OBJCOPY_FLAGS += -O binary
+
+#
+# The flags passed to obj-dump.
+#
+OBJDUMP_FLAGS += --disassemble --source --disassembler-options=force-thumb
+
+#
+# Are we building with code size optimisations?
+#
+ifeq ($(SMALL),1)
+  CFLAGS += -Os
+else
+  CFLAGS += -O2
+endif
+
+#
+# CPU-dependent directories
+#
+CONTIKI_CPU_DIRS = . dev net sys
+
+#
+# Use the existing drivers and libraries from cc32xx sdk
+#
+CONTIKI_CPU_DIRS += $(CC32XX_SDK_INC_DIR)
+ifneq ($(CC32XX_NONOS),1)
+CONTIKI_CPU_DIRS += $(CC32XX_SDK_OSLIB_INC_DIR)
+endif
+CONTIKI_CPU_DIRS += $(CC32XX_SDK_DRIVERLIB_INC_DIR)
+CONTIKI_CPU_DIRS += $(CC32XX_SDK_SIMPLELINK_INC_DIR)
+CONTIKI_CPU_DIRS += $(CC32XX_SDK_SIMPLELINK_INC_DIR)/source
+CONTIKI_CPU_DIRS += $(CC32XX_SDK_SIMPLELINK_INC_DIR)/include
+
+ifneq ($(CC32XX_NONOS),1)
+TARGET_LIBFILES += $(CONTIKI_CPU)/$(CC32XX_SDK_SIMPLELINK_DIR)/gcc/exe/libsimplelink.a
+else
+TARGET_LIBFILES += $(CONTIKI_CPU)/$(CC32XX_SDK_SIMPLELINK_DIR)/gcc/exe/libsimplelink_nonos.a
+endif
+TARGET_LIBFILES += $(CONTIKI_CPU)/$(CC32XX_SDK_DRIVERLIB_DIR)/gcc/exe/libdriver.a
+ifneq ($(CC32XX_NONOS),1)
+TARGET_LIBFILES += $(CONTIKI_CPU)/$(CC32XX_SDK_OSLIB_DIR)/gcc/exe/FreeRTOS.a
+endif
+
+#
+# CPU-dependent cleanup files
+#
+CLEAN += symbols.c symbols.h *.d *.bin *.elf *.hex
+
+CLEAN += $(CC32XX_SDK_OSLIB_DIR)/gcc/obj
+CLEAN += $(CC32XX_SDK_OSLIB_DIR)/gcc/exe
+
+CLEAN += $(CC32XX_SDK_DRIVERLIB_DIR)/gcc/obj
+CLEAN += $(CC32XX_SDK_DRIVERLIB_DIR)/gcc/exe
+
+CLEAN += $(CC32XX_SDK_SIMPLELINK_DIR)/gcc/obj_os
+CLEAN += $(CC32XX_SDK_SIMPLELINK_DIR)/gcc/obj_nonos
+CLEAN += $(CC32XX_SDK_SIMPLELINK_DIR)/gcc/exe
+
+#
+# Use the existing debug I/O in cpu/arm/common
+#
+CONTIKI_CPU_DIRS += ../arm/common/dbg-io
+
+#
+# CPU-dependent source files
+#
+CONTIKI_CPU_SOURCEFILES += clock.c clock-arch.c dbg.c main.c 
+CONTIKI_CPU_SOURCEFILES += mtarch.c rtimer-arch.c startup_gcc.c
+CONTIKI_CPU_SOURCEFILES += spi-arch.c uart-arch.c watchdog.c
+
+DEBUG_IO_SOURCEFILES += dbg-printf.c dbg-snprintf.c dbg-sprintf.c strformat.c
+NET_ARCH_SOURCEFILES += wifi.c
+ifeq ($(CONTIKI_WITH_IPV6),1)
+	NET_ARCH_SOURCEFILES += wifi-ip64-drv.c
+else
+	NET_ARCH_SOURCEFILES += wifi-drv.c 
+endif
+
+CONTIKI_SOURCEFILES += $(CONTIKI_CPU_SOURCEFILES) $(DEBUG_IO_SOURCEFILES)
+CONTIKI_SOURCEFILES += $(NET_ARCH_SOURCEFILES)
+
+# 
+# Don't treat the .elf as intermediate
+#
+.PRECIOUS: %.elf %.hex %.bin %.lss
+
+CC3200SDK_DRIVER_LIB:
+	@echo Building CC3200 SDK driver library
+	@make -C $(CONTIKI_CPU)/$(CC32XX_SDK_DRIVERLIB_DIR)/gcc
+
+CC3200SDK_OS_LIB:
+ifneq ($(CC32XX_NONOS),1)
+	@echo Building CC3200 SDK FreeRTOS library
+	@make -C $(CONTIKI_CPU)/$(CC32XX_SDK_OSLIB_DIR)/gcc
+else
+	@echo CC3200 SDK FreeRTOS library not needed, skip building.
+endif
+
+CC3200SDK_SIMPLELINK_LIB:
+	@echo Building CC3200 SimpleLink driver library
+ifneq ($(CC32XX_NONOS),1)
+	@make -C $(CONTIKI_CPU)/$(CC32XX_SDK_SIMPLELINK_DIR)/gcc
+else
+	@make -C $(CONTIKI_CPU)/$(CC32XX_SDK_SIMPLELINK_DIR)/gcc -e target=NONOS
+endif
+
+#
+# Compilation rules
+#
+CUSTOM_RULE_LINK=1
+
+%.elf: %.co $(PROJECT_OBJECTFILES) $(PROJECT_LIBRARIES) contiki-$(TARGET).a $(OBJECTDIR)/symbols.o $(LDSCRIPT)
+	$(TRACE_LD)
+	$(Q)$(LD) --entry=ResetISR $(LDFLAGS) ${filter-out $(LDSCRIPT) %.a,$^} ${filter %.a,$^} $(TARGET_LIBFILES) $(LIBM) $(LIBC) $(LIBGCC) -o $@
+
+%.hex: %.elf
+	$(OBJCOPY) -O ihex $< $@
+
+%.bin: %.elf
+	$(OBJCOPY) $(OBJCOPY_FLAGS) $< $@
+
+%.lss: %.elf
+	$(OBJDUMP) $(OBJDUMP_FLAGS) $< > $@
+#
+# We don't really need the .hex and .bin for the .$(TARGET) but let's make
+# sure they get built
+#
+%.$(TARGET): %.elf %.hex %.bin %.lss
+	cp $< $@
+
+#
+# This rule is used to generate the correct symbol lookup table
+#
+ifdef CORE
+ifeq ($(wildcard $(CORE)),)
+	${error $(CORE) doesn\'t exist}
+endif
+.PHONY: symbols.c symbols.h
+symbols.c:
+	@echo Generating debug symbols for $(CORE)
+	$(NM) $(CORE) | awk -f $(CONTIKI)/tools/mknmlist > symbols.c
+else
+symbols.c symbols.h:
+	@echo Generating empty debug symbols
+	cp ${CONTIKI}/tools/empty-symbols.c symbols.c
+	cp ${CONTIKI}/tools/empty-symbols.h symbols.h
+endif
+
+#
+# This rule is used to generate the correct linker script
+#
+LDGENFLAGS += $(addprefix -D,$(subst $(COMMA), ,$(DEFINES)))
+LDGENFLAGS += $(addprefix -I,$(SOURCEDIRS))
+LDGENFLAGS += -imacros "contiki-conf.h"
+LDGENFLAGS += -x c -P -E
+
+#
+# Assumes LDSCRIPT was not overridden and is in $(OBJECTDIR)
+#
+$(LDSCRIPT): $(SOURCE_LDSCRIPT) CC3200SDK_DRIVER_LIB CC3200SDK_OS_LIB CC3200SDK_SIMPLELINK_LIB | $(OBJECTDIR)
+	$(TRACE_CC)
+	$(Q)$(CC) $(LDGENFLAGS) $< -o $@

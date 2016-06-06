@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,27 +31,50 @@
  */
 
 /**
+ * \addtogroup cc32xx
+ * @{
+ *
+ * \defgroup cc32xx-char-io cc32xx Character I/O
+ *
+ * cc32xx CPU-specific functions for debugging and SLIP I/O
+ *
+ * @{
+ *
  * \file
- *         A very simple Contiki application showing how Contiki programs look
- * \author
- *         Adam Dunkels <adam@sics.se>
+ * Header file for the cc32xx Debug I/O module
  */
+#ifndef DBG_H_
+#define DBG_H_
 
-#include "contiki.h"
-#include "dev/leds.h"
+#include "contiki-conf.h"
 
-#include <stdio.h> /* For printf() */
+/**
+ * \brief Print a stream of bytes
+ * \param seq A pointer to the stream
+ * \param len The number of bytes to print
+ * \return The number of printed bytes
+ *
+ * This function is an arch-specific implementation required by the dbg-io
+ * API in cpu/arm/common/dbg-io. It prints a stream of bytes over the
+ * peripheral used by the platform.
+ */
+unsigned int dbg_send_bytes(const unsigned char *seq, unsigned int len);
 
-/*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
-{
-  PROCESS_BEGIN();
+/**
+ * \brief Flushes character output
+ *
+ *        When debugging is sent over USB, this functions causes the USB
+ *        driver to immediately TX the content of output buffers. When
+ *        debugging is over UART, this function does nothing.
+ *
+ *        There is nothing stopping you from using this macro in your code but
+ *        normally, you won't have to.
+ */
+#define dbg_flush()
 
-  printf("Hello, world\n");
-  
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
+#endif /* DBG_H_ */
+
+/**
+ * @}
+ * @}
+ */

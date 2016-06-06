@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,27 +31,24 @@
  */
 
 /**
+ * \addtogroup cc32xx
+ * @{
+ *
+ * \defgroup cc32xx-wifi cc32xx Wireless Network driver
+ *
+ * IP64 Driver for the cc32xx Wireless Network controller
+ * @{
+ *
  * \file
- *         A very simple Contiki application showing how Contiki programs look
+ * 		Headers of the cc32xx IP64 Wireless Network driver
  * \author
- *         Adam Dunkels <adam@sics.se>
+ *      Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
 
-#include "contiki.h"
-#include "dev/leds.h"
+#ifndef WIFI_IP64_DRV_H_
+#define WIFI_IP64_DRV_H_
 
-#include <stdio.h> /* For printf() */
+#include "ip64-driver.h"
+extern const struct ip64_driver wifi_ip64_driver;
 
-/*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
-{
-  PROCESS_BEGIN();
-
-  printf("Hello, world\n");
-  
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
+#endif /* WIFI_IP64_DRV_H_ */

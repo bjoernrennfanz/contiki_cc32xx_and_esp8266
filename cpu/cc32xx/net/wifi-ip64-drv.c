@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,27 +31,80 @@
  */
 
 /**
+ * \addtogroup cc32xx
+ * @{
+ *
+ * \defgroup cc32xx-wifi cc32xx IP64 Wireless Network driver
+ *
+ * IP64 Driver for the cc32xx Wireless Network controller
+ * @{
+ *
  * \file
- *         A very simple Contiki application showing how Contiki programs look
+ * 		Implementation of the cc32xx IP64 Wireless Network driver
  * \author
- *         Adam Dunkels <adam@sics.se>
+ *      Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
 
 #include "contiki.h"
-#include "dev/leds.h"
+#include "net/wifi.h"
+#include "net/wifi-ip64-drv.h"
 
-#include <stdio.h> /* For printf() */
+#include "net/ip64/ip64.h"
+#include "net/ip64/ip64-eth.h"
+
+#include <string.h>
+
+PROCESS(wifi_ip64_driver_process, "CC32xx WLAN IP64 driver");
 
 /*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
+static void
+wifi_ip64_init(void)
 {
-  PROCESS_BEGIN();
+	uint32_t hostaddr = uip_htonl(wifi_own_ip);
+	uint32_t netmask = uip_htonl(wifi_netmask);
+	uint32_t gateway = uip_htonl(wifi_gateway);
 
-  printf("Hello, world\n");
-  
-  PROCESS_END();
+	// Setup Ethernet address
+	memcpy(ip64_eth_addr.addr, wifi_mac_addr, sizeof(wifi_mac_addr));
+
+	// Setup IP, Gateway and Netmask
+	ip64_set_hostaddr((uip_ip4addr_t *)&hostaddr);
+	ip64_set_netmask((uip_ip4addr_t *)&netmask);
+	ip64_set_draddr((uip_ip4addr_t *)&gateway);
+
+	// Startup driver process
+	process_start(&wifi_ip64_driver_process, NULL);
 }
+/*---------------------------------------------------------------------------*/
+static int
+wifi_ip64_output(uint8_t *packet, uint16_t len)
+{
+	wifi_send(packet, len);
+	return len;
+}
+/*---------------------------------------------------------------------------*/
+PROCESS_THREAD(wifi_ip64_driver_process, ev, data)
+{
+	static int len;
+	static struct etimer e;
+	PROCESS_BEGIN();
+
+	while(1)
+	{
+		etimer_set(&e, 1);
+		PROCESS_WAIT_EVENT();
+		len = wifi_read(ip64_packet_buffer, ip64_packet_buffer_maxlen);
+		if(len > 0)
+		{
+			IP64_INPUT(ip64_packet_buffer, len);
+		}
+	}
+
+	PROCESS_END();
+}
+/*---------------------------------------------------------------------------*/
+const struct ip64_driver wifi_ip64_driver = {
+	wifi_ip64_init,
+	wifi_ip64_output
+};
 /*---------------------------------------------------------------------------*/

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,26 +32,23 @@
 
 /**
  * \file
- *         A very simple Contiki application showing how Contiki programs look
+ *         Headers of multithreading module for TI CC32xx.
  * \author
- *         Adam Dunkels <adam@sics.se>
+ *         Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
 
-#include "contiki.h"
-#include "dev/leds.h"
+#ifndef MTARCH_H_
+#define MTARCH_H_
 
-#include <stdio.h> /* For printf() */
+#if defined(USE_FREERTOS) || defined(USE_TIRTOS)
+#include "osi.h"
 
-/*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
-{
-  PROCESS_BEGIN();
-
-  printf("Hello, world\n");
-  
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
+struct mtarch_thread {
+	OsiTaskHandle task;
+};
+#else
+struct mtarch_thread {
+	unsigned char *sp;
+};
+#endif
+#endif /* MTARCH_H_ */

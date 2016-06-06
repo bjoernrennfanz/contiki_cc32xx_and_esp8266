@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,28 +30,15 @@
  *
  */
 
-/**
- * \file
- *         A very simple Contiki application showing how Contiki programs look
- * \author
- *         Adam Dunkels <adam@sics.se>
- */
+#ifndef IP64_CONF_H
+#define IP64_CONF_H
 
-#include "contiki.h"
-#include "dev/leds.h"
+#include "net/ip64/ip64-eth-interface.h"
+#include "net/wifi-ip64-drv.h"
 
-#include <stdio.h> /* For printf() */
+#define IP64_CONF_UIP_FALLBACK_INTERFACE ip64_eth_interface
+#define IP64_CONF_INPUT                  ip64_eth_interface_input
 
-/*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
-{
-  PROCESS_BEGIN();
-
-  printf("Hello, world\n");
-  
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
+#define IP64_CONF_ETH_DRIVER             wifi_ip64_driver
+#define IP64_CONF_DHCP					 0
+#endif /* IP64_CONF_H */

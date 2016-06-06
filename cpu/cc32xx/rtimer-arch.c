@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,26 +32,48 @@
 
 /**
  * \file
- *         A very simple Contiki application showing how Contiki programs look
+ *         Implementation of the Contiki real-time module rt for TI CC32xx
  * \author
- *         Adam Dunkels <adam@sics.se>
+ *         Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
 
-#include "contiki.h"
-#include "dev/leds.h"
+#include "sys/clock.h"
+#include "sys/rtimer.h"
+#include "rtimer-arch.h"
 
-#include <stdio.h> /* For printf() */
+static volatile rtimer_clock_t rtimer_arch_wakeup_time;
 
 /*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
+void
+rtimer_arch_init(void)
 {
-  PROCESS_BEGIN();
+	// Set initial time
+	rtimer_arch_wakeup_time = rtimer_arch_now();
+}
+/*---------------------------------------------------------------------------*/
+void
+rtimer_arch_request_poll(void)
+{
+	// Run next timer
+	rtimer_run_next();
+}
+/*---------------------------------------------------------------------------*/
+int
+rtimer_arch_pending(void)
+{
+	// Check if timer is expired
+	if (rtimer_arch_now() >= rtimer_arch_wakeup_time)
+	{
+		return 1;
+	}
 
-  printf("Hello, world\n");
-  
-  PROCESS_END();
+	return 0;
+}
+/*---------------------------------------------------------------------------*/
+void
+rtimer_arch_schedule(rtimer_clock_t t)
+{
+	// Save next wake up time
+	rtimer_arch_wakeup_time = t;
 }
 /*---------------------------------------------------------------------------*/

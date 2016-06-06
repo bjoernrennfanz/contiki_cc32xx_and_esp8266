@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,28 +30,88 @@
  *
  */
 
+/** \addtogroup cc32xx-char-io
+ * @{ */
 /**
  * \file
- *         A very simple Contiki application showing how Contiki programs look
- * \author
- *         Adam Dunkels <adam@sics.se>
+ *     Implementation of arch-specific functions required by the dbg_io API in
+ *     cpu/arm/common/dbg-io
  */
-
 #include "contiki.h"
-#include "dev/leds.h"
 
-#include <stdio.h> /* For printf() */
+#include "dbg.h"
+#include "dev/uart-arch.h"
 
+#include <stdio.h>
 /*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
+#define write_byte(b) uart_write_byte(DBG_CONF_UART, b)
+#define flush()
 /*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
+#undef abort
+#undef putchar
+#undef puts
+
+#define SLIP_END     0300
+/*---------------------------------------------------------------------------*/
+int
+putchar(int c)
 {
-  PROCESS_BEGIN();
+#if DBG_CONF_SLIP_MUX
+  static char debug_frame = 0;
 
-  printf("Hello, world\n");
-  
-  PROCESS_END();
+  if(!debug_frame) {
+    write_byte(SLIP_END);
+    write_byte('\r');
+    debug_frame = 1;
+  }
+#endif
+
+  write_byte(c);
+
+  if(c == '\n') {
+#if DBG_CONF_SLIP_MUX
+    write_byte(SLIP_END);
+    debug_frame = 0;
+#endif
+    dbg_flush();
+  }
+  return c;
 }
 /*---------------------------------------------------------------------------*/
+unsigned int
+dbg_send_bytes(const unsigned char *s, unsigned int len)
+{
+  unsigned int i = 0;
+
+  while(s && *s != 0) {
+    if(i >= len) {
+      break;
+    }
+    putchar(*s++);
+    i++;
+  }
+  return i;
+}
+/*---------------------------------------------------------------------------*/
+int
+puts(const char *s)
+{
+  unsigned int i = 0;
+
+  while(s && *s != 0) {
+    putchar(*s++);
+    i++;
+  }
+  putchar('\n');
+  return i;
+}
+/*---------------------------------------------------------------------------*/
+void
+abort(void)
+{
+	while(1)
+	{
+	}
+}
+/*---------------------------------------------------------------------------*/
+/** @} */

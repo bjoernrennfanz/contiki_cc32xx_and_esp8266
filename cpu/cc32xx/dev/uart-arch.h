@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,27 +31,56 @@
  */
 
 /**
+ * \addtogroup cc32xx
+ * @{
+ *
+ * \defgroup cc32xx-uart cc32xx UART
+ *
+ * Driver for the cc32xx UART controller
+ * @{
+ *
  * \file
- *         A very simple Contiki application showing how Contiki programs look
- * \author
- *         Adam Dunkels <adam@sics.se>
+ * Header file for the cc32xx UART driver
  */
+#ifndef UART_ARCH_H_
+#define UART_ARCH_H_
 
 #include "contiki.h"
-#include "dev/leds.h"
 
-#include <stdio.h> /* For printf() */
+#include <stdint.h>
 
 /*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
+/** \name UART instance count
+ * @{
+ */
+#define UART_INSTANCE_COUNT   2
+/** @} */
 /*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
-{
-  PROCESS_BEGIN();
+/** \name UART functions
+ * @{
+ */
 
-  printf("Hello, world\n");
-  
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
+/** \brief Initialises the UART controller, configures I/O control
+ * and interrupts
+ * \param uart The UART instance to use (0 to \c UART_INSTANCE_COUNT - 1)
+ */
+void uart_init(uint8_t uart);
+
+/** \brief Sends a single character down the UART
+ * \param uart The UART instance to use (0 to \c UART_INSTANCE_COUNT - 1)
+ * \param b The character to transmit
+ */
+void uart_write_byte(uint8_t uart, uint8_t b);
+
+/** \brief Assigns a callback to be called when the UART receives a byte
+ * \param uart The UART instance to use (0 to \c UART_INSTANCE_COUNT - 1)
+ * \param input A pointer to the function
+ */
+void uart_set_input(uint8_t uart, int (* input)(unsigned char c));
+
+void uart_isr(uint8_t uart);
+#define uart1_set_input(f) uart_set_input(UART1_CONF_UART, f)
+
+/** @} */
+
+#endif /* UART_ARCH_H_ */

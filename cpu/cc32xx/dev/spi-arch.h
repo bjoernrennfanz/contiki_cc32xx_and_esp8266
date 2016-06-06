@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,26 +32,23 @@
 
 /**
  * \file
- *         A very simple Contiki application showing how Contiki programs look
+ *         Headers of SPI architecture for TI CC32xx.
  * \author
- *         Adam Dunkels <adam@sics.se>
+ *         Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
 
-#include "contiki.h"
-#include "dev/leds.h"
 
-#include <stdio.h> /* For printf() */
+#ifndef SPI_ARCH_H_
+#define SPI_ARCH_H_
 
-/*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
-{
-  PROCESS_BEGIN();
+extern uint8_t spi_rxbuf;
+extern uint8_t spi_txbuf;
 
-  printf("Hello, world\n");
-  
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
+// Prototyps (Chip Select)
+void spi_cs_enable(void);
+void spi_cs_disable(void);
+
+// Prototype RXBUF
+uint8_t spi_get_rxbuf(void);
+
+#endif /* SPI_ARCH_H_ */

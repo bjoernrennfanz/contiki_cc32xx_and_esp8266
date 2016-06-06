@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,26 +32,79 @@
 
 /**
  * \file
- *         A very simple Contiki application showing how Contiki programs look
+ *         Clock implementation for TI CC32xx.
  * \author
- *         Adam Dunkels <adam@sics.se>
+ *         Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
 
-#include "contiki.h"
-#include "dev/leds.h"
+#include "sys/clock.h"
+#include "clock-arch.h"
 
-#include <stdio.h> /* For printf() */
+#include "rom.h"
+#include "rom_map.h"
+#include "utils.h"
+
+#if defined(USE_FREERTOS) || defined(USE_TIRTOS)
+#include "osi.h"
+#endif
 
 /*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
+void
+clock_init(void)
 {
-  PROCESS_BEGIN();
-
-  printf("Hello, world\n");
-  
-  PROCESS_END();
+	// Call architecture specific clock initialize
+	clock_arch_init();
 }
 /*---------------------------------------------------------------------------*/
+clock_time_t
+clock_time(void)
+{
+	// Return architecture specific clock count
+	return (clock_arch_get_tick_count() / RTIMER_TO_CLOCK_SECOND);
+}
+/*---------------------------------------------------------------------------*/
+unsigned long
+clock_seconds(void)
+{
+	// Return architecture specific clock seconds
+	return ((clock_arch_get_tick_count() / RTIMER_TO_CLOCK_SECOND) / CLOCK_SECOND);
+}
+/*---------------------------------------------------------------------------*/
+void
+clock_set_seconds(unsigned long sec)
+{
+	// Update architecture specific clock seconds
+	clock_arch_set_tick_count(((clock_time_t)sec * CLOCK_SECOND) * RTIMER_TO_CLOCK_SECOND);
+}
+/*---------------------------------------------------------------------------*/
+void
+clock_wait(clock_time_t t)
+{
+	clock_time_t start;
+
+	start = clock_time();
+	while(clock_time() - start < (clock_time_t)t);
+}
+/*---------------------------------------------------------------------------*/
+void clock_delay_usec(uint16_t dt)
+{
+#if defined(USE_FREERTOS) || defined(USE_TIRTOS)
+	// Call OS delay
+	osi_Sleep(dt);
+#else
+	// Call delay from driver lib
+	MAP_UtilsDelay(USEC_TO_LOOP(dt));
+#endif
+}
+/*---------------------------------------------------------------------------*/
+void clock_delay(unsigned int cnt)
+{
+#if defined(USE_FREERTOS) || defined(USE_TIRTOS)
+	// Call OS delay
+	osi_Sleep(dt);
+#else
+	// Call delay from driver lib
+	MAP_UtilsDelay(USEC_TO_LOOP(3) * cnt);
+#endif
+}
+

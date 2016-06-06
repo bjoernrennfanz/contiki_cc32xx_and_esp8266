@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2010, Swedish Institute of Computer Science.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,32 +26,59 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * This file is part of the Contiki operating system.
- *
  */
 
 /**
  * \file
- *         A very simple Contiki application showing how Contiki programs look
+ *         Basic SPI macros for CC32xx
  * \author
- *         Adam Dunkels <adam@sics.se>
+ *         Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
 
-#include "contiki.h"
-#include "dev/leds.h"
+#ifndef SPI_H_
+#define SPI_H_
 
-#include <stdio.h> /* For printf() */
+#include "hw_ints.h"
+#include "hw_types.h"
 
-/*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
-{
-  PROCESS_BEGIN();
+#include "spi-arch.h"
 
-  printf("Hello, world\n");
-  
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
+/* Externals */
+extern uint8_t spi_busy;
+
+/* Prototypes */
+void spi_flush(void);
+void spi_init(void);
+uint8_t spi_read(void);
+void spi_write(uint8_t data);
+void spi_write_fast(uint8_t data);
+
+void spi_wait_tx_ready(void);
+void spi_wait_tx_ended(void);
+
+/* SPI buffer dummy's */
+#define SPI_RXBUF	spi_get_rxbuf()
+#define SPI_TXBUF	spi_txbuf;
+
+/* Define SPI macros used by CC2x20 drivers */
+#define SPI_WAITFORTxREADY()	spi_wait_tx_ready()
+#define SPI_WAITFORTx_BEFORE() 	SPI_WAITFORTxREADY()
+#define SPI_WAITFORTx_AFTER()
+#define SPI_WAITFORTx_ENDED()	spi_wait_tx_ended()
+
+/* Write one character to SPI */
+#define SPI_WRITE(data)			spi_write(data)
+
+/* Write one character to SPI - will not wait for end
+   useful for multiple writes with wait after final */
+#define SPI_WRITE_FAST(data)	spi_write(data)
+
+/* Read one character from SPI */
+#define SPI_READ(data)			data = spi_read()
+
+/* Flush the SPI read register */
+#ifndef SPI_FLUSH
+#define SPI_FLUSH()				spi_flush()
+#endif
+
+#endif /* SPI_H_ */

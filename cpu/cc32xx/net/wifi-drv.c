@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,27 +31,89 @@
  */
 
 /**
+ * \addtogroup cc32xx
+ * @{
+ *
+ * \defgroup cc32xx-wifi cc32xx Wireless Network driver
+ *
+ * IP64 Driver for the cc32xx Wireless Network controller
+ * @{
+ *
  * \file
- *         A very simple Contiki application showing how Contiki programs look
+ * 		Implementation of the cc32xx Wireless Network driver
  * \author
- *         Adam Dunkels <adam@sics.se>
+ *      Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
 
-#include "contiki.h"
-#include "dev/leds.h"
+#include "contiki-net.h"
+#include "net/wifi.h"
 
-#include <stdio.h> /* For printf() */
+#include "net/wifi-drv.h"
+
+#define BUF ((struct uip_eth_hdr *)&uip_buf[0])
+
+PROCESS(wifi_drv_process, "CC32xx WLAN driver");
 
 /*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
+uint8_t
+wifi_drv_output(void)
 {
-  PROCESS_BEGIN();
+	uip_arp_out();
+	wifi_drv_send();
 
-  printf("Hello, world\n");
-  
-  PROCESS_END();
+	return 0;
+}
+/*---------------------------------------------------------------------------*/
+void
+wifi_drv_send(void)
+{
+	wifi_send(&uip_buf[0], uip_len);
+}
+/*---------------------------------------------------------------------------*/
+static void
+wifi_drv_pollhandler(void)
+{
+	process_poll(&wifi_drv_process);
+	uip_len = wifi_read(&uip_buf[0], UIP_BUFSIZE);
+
+	if (uip_len > 0)
+	{
+		if (BUF->type == uip_htons(UIP_ETHTYPE_IP))
+		{
+			uip_len -= sizeof(struct uip_eth_hdr);
+			tcpip_input();
+		}
+		else
+		{
+			if (BUF->type == uip_htons(UIP_ETHTYPE_ARP))
+			{
+				uip_arp_arpin();
+				/* If the above function invocation resulted in data that
+				 should be sent out on the network, the global variable
+				 uip_len is set to a value > 0. */
+				if (uip_len > 0)
+				{
+					wifi_drv_send();
+				}
+			}
+		}
+	}
+}
+/*---------------------------------------------------------------------------*/
+PROCESS_THREAD(wifi_drv_process, ev, data)
+{
+	PROCESS_POLLHANDLER(wifi_drv_pollhandler());
+	PROCESS_BEGIN();
+
+	wifi_init();
+	tcpip_set_outputfunc(wifi_drv_output);
+
+	process_poll(&wifi_drv_process);
+
+	PROCESS_WAIT_UNTIL(ev == PROCESS_EVENT_EXIT);
+
+	wifi_exit();
+
+	PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/

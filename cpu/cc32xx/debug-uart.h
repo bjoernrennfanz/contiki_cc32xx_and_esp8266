@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,27 +31,17 @@
  */
 
 /**
+ * \addtogroup cc32xx-char-io
+ * @{
+ *
  * \file
- *         A very simple Contiki application showing how Contiki programs look
- * \author
- *         Adam Dunkels <adam@sics.se>
+ * This file is here because DBG I/O expects it to be.
  */
+#ifndef DEBUG_UART_H_
+#define DEBUG_UART_H_
 
-#include "contiki.h"
-#include "dev/leds.h"
+#include "dbg.h"
 
-#include <stdio.h> /* For printf() */
+#endif /* DEBUG_UART_H_ */
 
-/*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
-{
-  PROCESS_BEGIN();
-
-  printf("Hello, world\n");
-  
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
+/** @} */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH, http://www.3bscientific.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,26 +32,36 @@
 
 /**
  * \file
- *         A very simple Contiki application showing how Contiki programs look
+ *         A quick program that blinks the RED LED
  * \author
- *         Adam Dunkels <adam@sics.se>
+ *         Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
 
 #include "contiki.h"
 #include "dev/leds.h"
 
-#include <stdio.h> /* For printf() */
+#include "blink.h"
 
 /*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
+PROCESS(blink_process, "Blink");
 /*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
+PROCESS_THREAD(blink_process, ev, data)
 {
+  PROCESS_EXITHANDLER(goto exit;)
   PROCESS_BEGIN();
 
-  printf("Hello, world\n");
-  
+  while(1) {
+    static struct etimer et;
+    etimer_set(&et, CLOCK_SECOND / 2);
+    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+    leds_on(LEDS_RED);
+    etimer_set(&et, CLOCK_SECOND / 10);
+    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+    leds_off(LEDS_RED);
+  }
+
+ exit:
+  leds_off(LEDS_RED);
   PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/

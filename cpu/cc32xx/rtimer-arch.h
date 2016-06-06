@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,26 +32,43 @@
 
 /**
  * \file
- *         A very simple Contiki application showing how Contiki programs look
+ *         Headers of the Contiki real-time module rt for TI CC32xx
  * \author
- *         Adam Dunkels <adam@sics.se>
+ *         Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
 
-#include "contiki.h"
-#include "dev/leds.h"
+#ifndef RTIMER_ARCH_H_
+#define RTIMER_ARCH_H_
 
-#include <stdio.h> /* For printf() */
+#include "contiki-conf.h"
+#include "clock-arch.h"
 
-/*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
-{
-  PROCESS_BEGIN();
+#if defined(USE_FREERTOS) || defined(USE_TIRTOS)
+#define RTIMER_ARCH_SECOND 	CLOCK_CONF_SECOND
+#define rtimer_arch_now() 	clock_time()
+#else
+#define RTIMER_ARCH_SECOND 	32768UL
+#define rtimer_arch_now() 	clock_arch_get_tick_count()
+#endif
 
-  printf("Hello, world\n");
-  
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
+/**
+ * \brief      Make the timer aware that the clock has changed
+ *
+ *             This function is used to inform the rt module
+ *             that the system clock has been updated. Typically, this
+ *             function would be called from the timer interrupt
+ *             handler when the clock has ticked.
+ */
+void rtimer_arch_request_poll(void);
+
+/**
+ * \brief      Check if there are any non-expired timers.
+ * \return     True if there are active timers, false if there are
+ *             no active timers.
+ *
+ *             This function checks if there are any active
+ *             timers that have not expired.
+ */
+int rtimer_arch_pending(void);
+
+#endif /* RTIMER_ARCH_H_ */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, 3B Scientific GmbH.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,30 +28,68 @@
  *
  * This file is part of the Contiki operating system.
  *
+ * cc32xx linker configuration file. This is not the actual file used at link
+ * stage. Rather, it is used as input for the auto-generation of the actual
+ * ld script, which is called cc32xx.ld and will be in the project directory
  */
 
-/**
- * \file
- *         A very simple Contiki application showing how Contiki programs look
- * \author
- *         Adam Dunkels <adam@sics.se>
- */
+#ifdef HEAP_CONF_SIZE
+#define HEAP_SIZE	HEAP_CONF_SIZE
+#else
+#error HEAP_CONF_SIZE is not specified. Please define HEAP_CONF_SIZE in contiki-conf.h.
+#endif
+ 
+#define SRAM_START		0x20004000
+#define SRAM_END		0x20040000
+#define SRAM_LENGTH		((SRAM_END - SRAM_START) - HEAP_SIZE) 
 
-#include "contiki.h"
-#include "dev/leds.h"
-
-#include <stdio.h> /* For printf() */
-
-/*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(hello_world_process, ev, data)
+MEMORY
 {
-  PROCESS_BEGIN();
-
-  printf("Hello, world\n");
-  
-  PROCESS_END();
+    SRAM (rwx) : ORIGIN = SRAM_START, LENGTH = SRAM_LENGTH
 }
-/*---------------------------------------------------------------------------*/
+
+SECTIONS
+{
+    .text :
+    {
+        _text = .;
+        KEEP(*(.intvecs))
+        *(.text*)
+        *(.rodata*)
+		*(.ARM.extab* .gnu.linkonce.armextab.*)
+		. = ALIGN(8);
+        _etext = .;
+    } > SRAM
+
+    .ARM : {
+    	__exidx_start = .;
+      	*(.ARM.exidx*)
+      	__exidx_end = .;
+    } > SRAM
+
+    __init_data = .;
+
+    .data : AT(__init_data)
+    {
+        _data = .;
+        *(.data*)
+		. = ALIGN (8);
+        _edata = .;
+    } > SRAM
+
+    .bss :
+    {
+        _bss = .;
+        *(.bss*)
+        *(COMMON)
+        _ebss = .;
+    } > SRAM
+
+    .heap :
+    {
+		_heap = .;
+		. = . + HEAP_SIZE;
+		. = ALIGN(8);
+		_eheap = .;
+    }
+}
