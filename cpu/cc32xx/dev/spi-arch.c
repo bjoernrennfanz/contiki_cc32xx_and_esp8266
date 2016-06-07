@@ -34,7 +34,7 @@
  * \file
  *         Implementation of SPI architecture for TI CC32xx.
  * \author
- * 		   Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
+ *       Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  *         Dominik Grauert <dominik.grauert@3bscientific.com>
  */
 
@@ -51,16 +51,16 @@
 #include "rom.h"
 #include "rom_map.h"
 
-#include "../../ti-cc3200-sdk/driverlib/src/spi.h"	// Ti SPI driver for cc32xx
+#include "../../ti-cc3200-sdk/driverlib/src/spi.h"  /* Ti SPI driver for cc32xx */
 #include "spi-arch.h"
-#include "spi.h"									// Contiki SPI driver
+#include "spi.h"                  /* Contiki SPI driver */
 
 #include <stdio.h>
 
 #if STARTUP_CONF_VERBOSE
-#define ERR_PRINT(x)		printf("Error [%d] at line [%d] in function [%s]\n", x, __LINE__, __FUNCTION__)
-#define PRINTF(...) 		printf(__VA_ARGS__)
-#define ASSERT_ON_ERROR(e)	{ if(e < 0) { ERR_PRINT(e); return; } }
+#define ERR_PRINT(x)    printf("Error [%d] at line [%d] in function [%s]\n", x, __LINE__, __FUNCTION__)
+#define PRINTF(...)     printf(__VA_ARGS__)
+#define ASSERT_ON_ERROR(e)  { if(e < 0) { ERR_PRINT(e); return; } }
 #else
 #define ERR_PRINT(x)
 #define PRINTF(...)
@@ -76,132 +76,131 @@
  * • Word Length: 8 bits
  */
 #ifndef CC32XX_SPI_BITRATE
-#define CC32XX_SPI_BITRATE		100000				// value is in Hz
+#define CC32XX_SPI_BITRATE    100000        /* value is in Hz */
 #endif
 
 #ifndef CC32XX_SPI_MODE
-#define CC32XX_SPI_MODE			SPI_MODE_MASTER
+#define CC32XX_SPI_MODE     SPI_MODE_MASTER
 #endif
 
 #ifndef CC32XX_SPI_SUBMODE
-#define CC32XX_SPI_SUBMODE		SPI_SUB_MODE_0
+#define CC32XX_SPI_SUBMODE    SPI_SUB_MODE_0
 #endif
 
 #ifndef CC32XX_SPI_CONFIG
 #if CC2520_USE_CSN_GPIO
-#define CC32XX_SPI_CONFIG		(SPI_HW_CTRL_CS | SPI_3PIN_MODE | SPI_TURBO_OFF | SPI_CS_ACTIVELOW | SPI_WL_8)
+#define CC32XX_SPI_CONFIG   (SPI_HW_CTRL_CS | SPI_3PIN_MODE | SPI_TURBO_OFF | SPI_CS_ACTIVELOW | SPI_WL_8)
 #else
-#define CC32XX_SPI_CONFIG		(SPI_SW_CTRL_CS | SPI_4PIN_MODE | SPI_TURBO_OFF | SPI_CS_ACTIVELOW | SPI_WL_8)
+#define CC32XX_SPI_CONFIG   (SPI_SW_CTRL_CS | SPI_4PIN_MODE | SPI_TURBO_OFF | SPI_CS_ACTIVELOW | SPI_WL_8)
 #endif
 #endif
 
-// Enable debug messages
-#define DEBUG	1
+/* Enable debug messages */
+#define DEBUG 1
 
 /*---------------------------------------------------------------------------*/
-// Global variables
+/* Global variables */
 uint8_t spi_rxbuf;
 uint8_t spi_txbuf;
 /*---------------------------------------------------------------------------*/
 void
 spi_init(void)
 {
-	/*
-	 * Basic Initialization
-	 * ====================
-	 * (refer to chapter 0.2.6.1 in http://www.ti.com/lit/ug/swru367b/swru367b.pdf)
-	 *
-	 * (a) Enable the SPI module clock by invoking following API:
-	 * This is allready done in pin_mux_config.c
-	 */
-	/*
-	 * (b) Set the pinmux to bring out the SPI signals to the chip boundary at desired location using:
-	 * This is allready done in pin_mux_config.c
-	 */
-	/*
-	 * (c) Soft reset the module:
-	 */
-	MAP_SPIReset(GSPI_BASE);
+  /*
+   * Basic Initialization
+   * ====================
+   * (refer to chapter 0.2.6.1 in http://www.ti.com/lit/ug/swru367b/swru367b.pdf)
+   *
+   * (a) Enable the SPI module clock by invoking following API:
+   * This is allready done in pin_mux_config.c
+   */
+  /*
+   * (b) Set the pinmux to bring out the SPI signals to the chip boundary at desired location using:
+   * This is allready done in pin_mux_config.c
+   */
+  /*
+   * (c) Soft reset the module:
+   */
+  MAP_SPIReset(GSPI_BASE);
 
-	/*
-	 * Configure the SPI with following parameters:
-	 * Mode, Sub mode, Bit Rate, Chip Select, Word Length
-	 */
-	MAP_SPIConfigSetExpClk(GSPI_BASE,
-		MAP_PRCMPeripheralClockGet(PRCM_GSPI),
-		CC32XX_SPI_BITRATE,
-		CC32XX_SPI_MODE,
-		CC32XX_SPI_SUBMODE,
-		CC32XX_SPI_CONFIG);
-	/*
-	 * Enable SPI channel for communication:
-	 */
-	MAP_SPIEnable(GSPI_BASE);
+  /*
+   * Configure the SPI with following parameters:
+   * Mode, Sub mode, Bit Rate, Chip Select, Word Length
+   */
+  MAP_SPIConfigSetExpClk(GSPI_BASE,
+                         MAP_PRCMPeripheralClockGet(PRCM_GSPI),
+                         CC32XX_SPI_BITRATE,
+                         CC32XX_SPI_MODE,
+                         CC32XX_SPI_SUBMODE,
+                         CC32XX_SPI_CONFIG);
+  /*
+   * Enable SPI channel for communication:
+   */
+  MAP_SPIEnable(GSPI_BASE);
 
 #if STARTUP_CONF_VERBOSE && DEBUG
-	PRINTF("SPI of CC32xx initialized\n");
+  PRINTF("SPI of CC32xx initialized\n");
 #endif
 }
 /*---------------------------------------------------------------------------*/
 void
 spi_flush()
 {
-	unsigned long temp;
+  unsigned long temp;
 
-	// Read FIFO empty
-	while(MAP_SPIDataGetNonBlocking(GSPI_BASE, &temp) > 0)
-	{
-		// Save into receive buffer
-		spi_rxbuf = (uint8_t)temp;
-	}
+  /* Read FIFO empty */
+  while(MAP_SPIDataGetNonBlocking(GSPI_BASE, &temp) > 0) {
+    /* Save into receive buffer */
+    spi_rxbuf = (uint8_t)temp;
+  }
 }
 /*---------------------------------------------------------------------------*/
 void
 spi_write(uint8_t data)
 {
-	spi_txbuf = data;
-	MAP_SPITransfer(GSPI_BASE, &spi_txbuf, &spi_rxbuf, 1, 0);
+  spi_txbuf = data;
+  MAP_SPITransfer(GSPI_BASE, &spi_txbuf, &spi_rxbuf, 1, 0);
 }
 /*---------------------------------------------------------------------------*/
 uint8_t
 spi_read()
 {
-	spi_txbuf = 0;
-	MAP_SPITransfer(GSPI_BASE, &spi_txbuf, &spi_rxbuf, 1, 0);
+  spi_txbuf = 0;
+  MAP_SPITransfer(GSPI_BASE, &spi_txbuf, &spi_rxbuf, 1, 0);
 
-	return spi_rxbuf;
+  return spi_rxbuf;
 }
 /*---------------------------------------------------------------------------*/
 void
 spi_wait_tx_ready()
 {
-	// Wait for space in FIFO
-	while(!(HWREG(GSPI_BASE + MCSPI_O_CH0STAT) & MCSPI_CH0STAT_TXS));
+  /* Wait for space in FIFO */
+  while(!(HWREG(GSPI_BASE + MCSPI_O_CH0STAT) & MCSPI_CH0STAT_TXS));
 }
 /*---------------------------------------------------------------------------*/
 void
 spi_wait_tx_ended()
 {
-	// Wait for end of transmission flag
-	while(!(HWREG(GSPI_BASE + MCSPI_O_CH0STAT) & MCSPI_CH0STAT_EOT));
+  /* Wait for end of transmission flag */
+  while(!(HWREG(GSPI_BASE + MCSPI_O_CH0STAT) & MCSPI_CH0STAT_EOT));
 }
 /*---------------------------------------------------------------------------*/
 uint8_t
 spi_get_rxbuf()
 {
-	return spi_rxbuf;
+  return spi_rxbuf;
 }
 /*---------------------------------------------------------------------------*/
 void
 spi_cs_enable()
 {
-	// Enable chip select
-	MAP_SPICSEnable(GSPI_BASE);
+  /* Enable chip select */
+  MAP_SPICSEnable(GSPI_BASE);
 }
 /*---------------------------------------------------------------------------*/
 void
 spi_cs_disable()
 {
-	// Disable chip select
-	MAP_SPICSDisable(GSPI_BASE);
+  /* Disable chip select */
+  MAP_SPICSDisable(GSPI_BASE);
 }

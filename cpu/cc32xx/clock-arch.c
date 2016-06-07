@@ -59,20 +59,20 @@ void
 clock_arch_init(void)
 {
 #if defined(USE_FREERTOS) || defined(USE_TIRTOS)
-	// Create task for clock timer tick
-	osi_TaskCreate(clock_arch_tick_task, (const signed char * const)"ContikiClock", CLOCK_ARCH_TICKTASK_STACKSIZE, NULL, CLOCK_ARCH_TICKTASK_PRIORITY, NULL);
+  /* Create task for clock timer tick */
+  osi_TaskCreate(clock_arch_tick_task, (const signed char *const)"ContikiClock", CLOCK_ARCH_TICKTASK_STACKSIZE, NULL, CLOCK_ARCH_TICKTASK_PRIORITY, NULL);
 #else
-	// Set SysTick period
-	SysTickPeriodSet(CLOCK_ARCH_PRELOAD);
+  /* Set SysTick period */
+  SysTickPeriodSet(CLOCK_ARCH_PRELOAD);
 
-	// Register SysTick ISR
-	SysTickIntRegister(&clock_arch_isr);
+  /* Register SysTick ISR */
+  SysTickIntRegister(&clock_arch_isr);
 
-	// Enable the SysTick Interrupt
-	SysTickIntEnable();
+  /* Enable the SysTick Interrupt */
+  SysTickIntEnable();
 
-	// Enable SysTick
-	SysTickEnable();
+  /* Enable SysTick */
+  SysTickEnable();
 #endif
 }
 /*---------------------------------------------------------------------------*/
@@ -80,57 +80,53 @@ clock_arch_init(void)
 void
 clock_arch_tick_task(void *pv_parameters)
 {
-	// Loop for ever
-	while(1)
-	{
-		clock_arch_update();
+  /* Loop for ever */
+  while(1) {
+    clock_arch_update();
 
-		// Thread sleeps for timer tick interval
-		osi_Sleep(CLOCK_ARCH_TICK_MS);
-	}
+    /* Thread sleeps for timer tick interval */
+    osi_Sleep(CLOCK_ARCH_TICK_MS);
+  }
 }
-
 #else
 void
 clock_arch_isr(void)
 {
-	clock_arch_update();
+  clock_arch_update();
 }
 #endif
 
-void clock_arch_update(void)
+void
+clock_arch_update(void)
 {
-	// Increment ticks
-	clock_arch_tick_count++;
+  /* Increment ticks */
+  clock_arch_tick_count++;
 
-	// Check if rtimer is pending
-	if (rtimer_arch_pending())
-	{
-		// Proceed rtimer module
-		rtimer_arch_request_poll();
-	}
+  /* Check if rtimer is pending */
+  if(rtimer_arch_pending()) {
+    /* Proceed rtimer module */
+    rtimer_arch_request_poll();
+  }
 
-	// Check if one clock tick needs increment
-	if (clock_arch_tick_count % RTIMER_TO_CLOCK_SECOND == 0)
-	{
-		// Check if etimer events are pending
-		if (etimer_pending())
-		{
-			// Proceed etimer module
-			etimer_request_poll();
-		}
-	}
+  /* Check if one clock tick needs increment */
+  if(clock_arch_tick_count % RTIMER_TO_CLOCK_SECOND == 0) {
+    /* Check if etimer events are pending */
+    if(etimer_pending()) {
+      /* Proceed etimer module */
+      etimer_request_poll();
+    }
+  }
 }
 /*---------------------------------------------------------------------------*/
 clock_time_t
 clock_arch_get_tick_count(void)
 {
-	return clock_arch_tick_count;
+  return clock_arch_tick_count;
 }
 /*---------------------------------------------------------------------------*/
 void
 clock_arch_set_tick_count(clock_time_t t)
 {
-	clock_arch_tick_count = t;
+  clock_arch_tick_count = t;
 }
 /*---------------------------------------------------------------------------*/

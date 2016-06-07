@@ -52,9 +52,10 @@ urlconv_init(void)
   int fd = cfs_open("wwwroot.cfg", CFS_READ);
   int rd = cfs_read(fd, wwwroot, sizeof(wwwroot));
   cfs_close(fd);
-  if(rd != -1) wwwrootlen = rd;
+  if(rd != -1) {
+    wwwrootlen = rd;
+  }
 }
-
 /*---------------------------------------------------------------------------*/
 /* URL to filename conversion
  *
@@ -80,7 +81,8 @@ urlconv_tofilename(char *dest, char *source, unsigned char maxlen)
   *dest = ISO_slash;
   strncpy(dest + 1, wwwroot, wwwrootlen);
   len = 0;
-  from = source; to = dest + wwwrootlen;
+  from = source;
+  to = dest + wwwrootlen;
   maxlen -= 2 + wwwrootlen;
   do {
     c = *(from++);
@@ -91,41 +93,45 @@ urlconv_tofilename(char *dest, char *source, unsigned char maxlen)
       break;
     case ISO_percent:
       c = 0;
-      hex1 = (*(from++) | 0x20) ^ 0x30;  // ascii only!
-      if(hex1 > 0x50 && hex1 < 0x57)
+      hex1 = (*(from++) | 0x20) ^ 0x30;  /* ascii only! */
+      if(hex1 > 0x50 && hex1 < 0x57) {
         hex1 -= 0x47;
-      else
-        if(hex1 > 9)
-          break;  // invalid hex
-      c = (*(from++) | 0x20) ^ 0x30;  // ascii only!
-      if(c > 0x50 && c < 0x57)
+      } else if(hex1 > 9) {
+        break;    /* invalid hex */
+      }
+      c = (*(from++) | 0x20) ^ 0x30;  /* ascii only! */
+      if(c > 0x50 && c < 0x57) {
         c -= 0x47;
-      else
-        if(c > 9)
-          break;  // invalid hex
+      } else if(c > 9) {
+        break;    /* invalid hex */
+      }
       c |= hex1 << 4;
     }
 
-    if(c < 0x20 || c > 0x7e)
-      c = 0;  // non ascii?!
-    if(len >= maxlen)
-      c = 0;  // too long?
-
+    if(c < 0x20 || c > 0x7e) {
+      c = 0;  /* non ascii?! */
+    }
+    if(len >= maxlen) {
+      c = 0;  /* too long? */
+    }
     if(c == ISO_slash || !c) {
       switch(*to) {
       case ISO_slash:
-        continue;  // no repeated slash
+        continue;  /* no repeated slash */
       case ISO_period:
         switch(to[-1]) {
-        case ISO_slash:  // handle "./" 
-           --to; --len;
-           continue;
+        case ISO_slash:  /* handle "./" */
+          --to;
+          --len;
+          continue;
         case ISO_period:
           if(to[-2] == ISO_slash) {
-            to -= 2; len -= 2;
+            to -= 2;
+            len -= 2;
             if(len) {
               do {
-                --to; --len;
+                --to;
+                --len;
               } while(*to != ISO_slash);
             }
             continue;
@@ -134,12 +140,13 @@ urlconv_tofilename(char *dest, char *source, unsigned char maxlen)
       }
     }
     if(c) {
-      ++to; ++len; 
+      ++to;
+      ++len;
       *to = c;
     }
   } while(c);
   if(*to == ISO_slash && (len + sizeof(http_index_htm) - 3) < maxlen) {
-    strcpy(to, http_index_htm);  // add index.htm
+    strcpy(to, http_index_htm);  /* add index.htm */
   } else {
     ++to;
     *to = 0;

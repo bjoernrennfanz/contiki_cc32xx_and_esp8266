@@ -40,5 +40,5 @@
 #define IP64_CONF_INPUT                  ip64_eth_interface_input
 
 #define IP64_CONF_ETH_DRIVER             wifi_ip64_driver
-#define IP64_CONF_DHCP					 0
+#define IP64_CONF_DHCP           0
 #endif /* IP64_CONF_H */

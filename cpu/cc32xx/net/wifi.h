@@ -40,7 +40,7 @@
  * @{
  *
  * \file
- * 		Headers of the cc32xx wireless network wrapper
+ *    Headers of the cc32xx wireless network wrapper
  * \author
  *      Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
@@ -50,53 +50,52 @@
 
 #include "simplelink.h"
 
-// Status bits - These are used to set/reset the corresponding bits in
-// given variable
+/* Status bits - These are used to set/reset the corresponding bits in */
+/* given variable */
 typedef enum {
-    STATUS_BIT_NWP_INIT = 0, 	// If this bit is set: Network Processor is
-                             	// powered up
+  STATUS_BIT_NWP_INIT = 0,    /* If this bit is set: Network Processor is */
+                              /* powered up */
 
-    STATUS_BIT_CONNECTION,   	// If this bit is set: the device is connected to
-                             	// the AP or client is connected to device (AP)
+  STATUS_BIT_CONNECTION,      /* If this bit is set: the device is connected to */
+                              /* the AP or client is connected to device (AP) */
 
-    STATUS_BIT_IP_LEASED,    	// If this bit is set: the device has leased IP to
-                             	// any connected client
+  STATUS_BIT_IP_LEASED,       /* If this bit is set: the device has leased IP to */
+                              /* any connected client */
 
-    STATUS_BIT_IP_AQUIRED,		// If this bit is set: the device has acquired an IP
+  STATUS_BIT_IP_AQUIRED,      /* If this bit is set: the device has acquired an IP */
 
-    STATUS_BIT_RAW_SOCKET_OPEN,	// If this bit is set: the raw socket is opened
+  STATUS_BIT_RAW_SOCKET_OPEN,   /* If this bit is set: the raw socket is opened */
 
-    STATUS_BIT_ARP_REQUESTED	// If this bit is set: Ethernet emulation has ARP requested
-
+  STATUS_BIT_ARP_REQUESTED    /* If this bit is set: Ethernet emulation has ARP requested */
 } wifi_statusbits_t;
 
-#define CLR_STATUS_BIT_ALL(status_variable)  	(status_variable = 0)
-#define SET_STATUS_BIT(status_variable, bit) 	status_variable |= (1<<(bit))
-#define CLR_STATUS_BIT(status_variable, bit) 	status_variable &= ~(1<<(bit))
-#define CLR_STATUS_BIT_ALL(status_variable)   	(status_variable = 0)
-#define GET_STATUS_BIT(status_variable, bit) 	(0 != (status_variable & (1<<(bit))))
+#define CLR_STATUS_BIT_ALL(status_variable)   (status_variable = 0)
+#define SET_STATUS_BIT(status_variable, bit)  status_variable |= (1 << (bit))
+#define CLR_STATUS_BIT(status_variable, bit)  status_variable &= ~(1 << (bit))
+#define CLR_STATUS_BIT_ALL(status_variable)     (status_variable = 0)
+#define GET_STATUS_BIT(status_variable, bit)  (0 != (status_variable & (1 << (bit))))
 
-#define IS_NW_PROCSR_ON(status_variable)     	GET_STATUS_BIT(status_variable,\
-													STATUS_BIT_NWP_INIT)
-#define IS_CONNECTED(status_variable)        	GET_STATUS_BIT(status_variable,\
-													STATUS_BIT_CONNECTION)
-#define IS_IP_LEASED(status_variable)        	GET_STATUS_BIT(status_variable,\
-											    	STATUS_BIT_IP_LEASED)
-#define IS_IP_ACQUIRED(status_variable)       	GET_STATUS_BIT(status_variable,\
-                                                	STATUS_BIT_IP_AQUIRED)
-#define IS_RAW_SOCKET_OPEN(status_variable)		GET_STATUS_BIT(status_variable,\
-													STATUS_BIT_RAW_SOCKET_OPEN)
-#define IS_ARP_REQUESTED(status_variable)		GET_STATUS_BIT(status_variable,\
-													STATUS_BIT_ARP_REQUESTED)
+#define IS_NW_PROCSR_ON(status_variable)      GET_STATUS_BIT(status_variable, \
+                                                             STATUS_BIT_NWP_INIT)
+#define IS_CONNECTED(status_variable)         GET_STATUS_BIT(status_variable, \
+                                                             STATUS_BIT_CONNECTION)
+#define IS_IP_LEASED(status_variable)         GET_STATUS_BIT(status_variable, \
+                                                             STATUS_BIT_IP_LEASED)
+#define IS_IP_ACQUIRED(status_variable)         GET_STATUS_BIT(status_variable, \
+                                                               STATUS_BIT_IP_AQUIRED)
+#define IS_RAW_SOCKET_OPEN(status_variable)   GET_STATUS_BIT(status_variable, \
+                                                             STATUS_BIT_RAW_SOCKET_OPEN)
+#define IS_ARP_REQUESTED(status_variable)   GET_STATUS_BIT(status_variable, \
+                                                           STATUS_BIT_ARP_REQUESTED)
 
-// Prototypes
+/* Prototypes */
 void wifi_init(void);
 void wifi_exit(void);
 
 int wifi_read(uint8_t *buffer, uint16_t bufsize);
 int wifi_send(uint8_t *data, uint16_t datalen);
 
-// Externals
+/* Externals */
 extern uint8_t wifi_mac_addr[SL_MAC_ADDR_LEN];
 extern uint8_t wifi_client_mac_addr[SL_MAC_ADDR_LEN];
 

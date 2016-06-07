@@ -44,7 +44,7 @@
  * cc3200-launchxl platform
  *
  * \author
- * 		   Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
+ *       Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  *         Dominik Grauert <dominik.grauert@3bscientific.com>
  */
 
@@ -54,10 +54,10 @@
 /*
  * Definitions for CC2520 FSMSTAT1 register
  */
-#define CC2520_FSMSTAT1_FIFO	(1 << 7)
-#define CC2520_FSMSTAT1_FIFOP	(1 << 6)
-#define CC2520_FSMSTAT1_SFD		(1 << 5)
-#define CC2520_FSMSTAT1_CCA		(1 << 4)
+#define CC2520_FSMSTAT1_FIFO  (1 << 7)
+#define CC2520_FSMSTAT1_FIFOP (1 << 6)
+#define CC2520_FSMSTAT1_SFD   (1 << 5)
+#define CC2520_FSMSTAT1_CCA   (1 << 4)
 
 /*
  * Prototypes for CC2520

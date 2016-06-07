@@ -44,11 +44,11 @@
 #include "osi.h"
 
 struct mtarch_thread {
-	OsiTaskHandle task;
+  OsiTaskHandle task;
 };
 #else
 struct mtarch_thread {
-	unsigned char *sp;
+  unsigned char *sp;
 };
 #endif
 #endif /* MTARCH_H_ */

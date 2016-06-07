@@ -43,21 +43,21 @@
 #include "contiki-conf.h"
 #include "rtimer-arch.h"
 
-#define CLOCK_ARCH_CPU					80000000
-#define RTIMER_TO_CLOCK_SECOND			(RTIMER_ARCH_SECOND / CLOCK_CONF_SECOND)
+#define CLOCK_ARCH_CPU          80000000
+#define RTIMER_TO_CLOCK_SECOND      (RTIMER_ARCH_SECOND / CLOCK_CONF_SECOND)
 
 #if defined(USE_FREERTOS) || defined(USE_TIRTOS)
-#define CLOCK_ARCH_TICK_MS				(1000 / RTIMER_ARCH_SECOND)
+#define CLOCK_ARCH_TICK_MS        (1000 / RTIMER_ARCH_SECOND)
 #else
-#define CLOCK_ARCH_PRELOAD				(CLOCK_ARCH_CPU / RTIMER_ARCH_SECOND)
+#define CLOCK_ARCH_PRELOAD        (CLOCK_ARCH_CPU / RTIMER_ARCH_SECOND)
 #endif
 
 #if defined(USE_FREERTOS) || defined(USE_TIRTOS)
-#define CLOCK_ARCH_TICKTASK_PRIORITY	8
-#define CLOCK_ARCH_TICKTASK_STACKSIZE	256
+#define CLOCK_ARCH_TICKTASK_PRIORITY  8
+#define CLOCK_ARCH_TICKTASK_STACKSIZE 256
 #endif
 
-#define USEC_TO_LOOP(x)					((CLOCK_ARCH_CPU/5000000)*x)
+#define USEC_TO_LOOP(x)         ((CLOCK_ARCH_CPU / 5000000) * x)
 
 /**
  * Start the clock, by creating timer service

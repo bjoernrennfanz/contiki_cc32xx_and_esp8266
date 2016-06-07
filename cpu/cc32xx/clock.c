@@ -52,59 +52,60 @@
 void
 clock_init(void)
 {
-	// Call architecture specific clock initialize
-	clock_arch_init();
+  /* Call architecture specific clock initialize */
+  clock_arch_init();
 }
 /*---------------------------------------------------------------------------*/
 clock_time_t
 clock_time(void)
 {
-	// Return architecture specific clock count
-	return (clock_arch_get_tick_count() / RTIMER_TO_CLOCK_SECOND);
+  /* Return architecture specific clock count */
+  return clock_arch_get_tick_count() / RTIMER_TO_CLOCK_SECOND;
 }
 /*---------------------------------------------------------------------------*/
 unsigned long
 clock_seconds(void)
 {
-	// Return architecture specific clock seconds
-	return ((clock_arch_get_tick_count() / RTIMER_TO_CLOCK_SECOND) / CLOCK_SECOND);
+  /* Return architecture specific clock seconds */
+  return (clock_arch_get_tick_count() / RTIMER_TO_CLOCK_SECOND) / CLOCK_SECOND;
 }
 /*---------------------------------------------------------------------------*/
 void
 clock_set_seconds(unsigned long sec)
 {
-	// Update architecture specific clock seconds
-	clock_arch_set_tick_count(((clock_time_t)sec * CLOCK_SECOND) * RTIMER_TO_CLOCK_SECOND);
+  /* Update architecture specific clock seconds */
+  clock_arch_set_tick_count(((clock_time_t)sec * CLOCK_SECOND) * RTIMER_TO_CLOCK_SECOND);
 }
 /*---------------------------------------------------------------------------*/
 void
 clock_wait(clock_time_t t)
 {
-	clock_time_t start;
+  clock_time_t start;
 
-	start = clock_time();
-	while(clock_time() - start < (clock_time_t)t);
+  start = clock_time();
+  while(clock_time() - start < (clock_time_t)t);
 }
 /*---------------------------------------------------------------------------*/
-void clock_delay_usec(uint16_t dt)
+void
+clock_delay_usec(uint16_t dt)
 {
 #if defined(USE_FREERTOS) || defined(USE_TIRTOS)
-	// Call OS delay
-	osi_Sleep(dt);
+  /* Call OS delay */
+  osi_Sleep(dt);
 #else
-	// Call delay from driver lib
-	MAP_UtilsDelay(USEC_TO_LOOP(dt));
+  /* Call delay from driver lib */
+  MAP_UtilsDelay(USEC_TO_LOOP(dt));
 #endif
 }
 /*---------------------------------------------------------------------------*/
-void clock_delay(unsigned int cnt)
+void
+clock_delay(unsigned int cnt)
 {
 #if defined(USE_FREERTOS) || defined(USE_TIRTOS)
-	// Call OS delay
-	osi_Sleep(dt);
+  /* Call OS delay */
+  osi_Sleep(dt);
 #else
-	// Call delay from driver lib
-	MAP_UtilsDelay(USEC_TO_LOOP(3) * cnt);
+  /* Call delay from driver lib */
+  MAP_UtilsDelay(USEC_TO_LOOP(3) * cnt);
 #endif
 }
-

@@ -40,7 +40,7 @@
  * @{
  *
  * \file
- * 		Implementation of the cc32xx Wireless Network driver
+ *    Implementation of the cc32xx Wireless Network driver
  * \author
  *      Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
@@ -58,62 +58,56 @@ PROCESS(wifi_drv_process, "CC32xx WLAN driver");
 uint8_t
 wifi_drv_output(void)
 {
-	uip_arp_out();
-	wifi_drv_send();
+  uip_arp_out();
+  wifi_drv_send();
 
-	return 0;
+  return 0;
 }
 /*---------------------------------------------------------------------------*/
 void
 wifi_drv_send(void)
 {
-	wifi_send(&uip_buf[0], uip_len);
+  wifi_send(&uip_buf[0], uip_len);
 }
 /*---------------------------------------------------------------------------*/
 static void
 wifi_drv_pollhandler(void)
 {
-	process_poll(&wifi_drv_process);
-	uip_len = wifi_read(&uip_buf[0], UIP_BUFSIZE);
+  process_poll(&wifi_drv_process);
+  uip_len = wifi_read(&uip_buf[0], UIP_BUFSIZE);
 
-	if (uip_len > 0)
-	{
-		if (BUF->type == uip_htons(UIP_ETHTYPE_IP))
-		{
-			uip_len -= sizeof(struct uip_eth_hdr);
-			tcpip_input();
-		}
-		else
-		{
-			if (BUF->type == uip_htons(UIP_ETHTYPE_ARP))
-			{
-				uip_arp_arpin();
-				/* If the above function invocation resulted in data that
-				 should be sent out on the network, the global variable
-				 uip_len is set to a value > 0. */
-				if (uip_len > 0)
-				{
-					wifi_drv_send();
-				}
-			}
-		}
-	}
+  if(uip_len > 0) {
+    if(BUF->type == uip_htons(UIP_ETHTYPE_IP)) {
+      uip_len -= sizeof(struct uip_eth_hdr);
+      tcpip_input();
+    } else {
+      if(BUF->type == uip_htons(UIP_ETHTYPE_ARP)) {
+        uip_arp_arpin();
+        /* If the above function invocation resulted in data that
+           should be sent out on the network, the global variable
+           uip_len is set to a value > 0. */
+        if(uip_len > 0) {
+          wifi_drv_send();
+        }
+      }
+    }
+  }
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(wifi_drv_process, ev, data)
 {
-	PROCESS_POLLHANDLER(wifi_drv_pollhandler());
-	PROCESS_BEGIN();
+  PROCESS_POLLHANDLER(wifi_drv_pollhandler());
+  PROCESS_BEGIN();
 
-	wifi_init();
-	tcpip_set_outputfunc(wifi_drv_output);
+  wifi_init();
+  tcpip_set_outputfunc(wifi_drv_output);
 
-	process_poll(&wifi_drv_process);
+  process_poll(&wifi_drv_process);
 
-	PROCESS_WAIT_UNTIL(ev == PROCESS_EVENT_EXIT);
+  PROCESS_WAIT_UNTIL(ev == PROCESS_EVENT_EXIT);
 
-	wifi_exit();
+  wifi_exit();
 
-	PROCESS_END();
+  PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/

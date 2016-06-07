@@ -47,33 +47,32 @@ static volatile rtimer_clock_t rtimer_arch_wakeup_time;
 void
 rtimer_arch_init(void)
 {
-	// Set initial time
-	rtimer_arch_wakeup_time = rtimer_arch_now();
+  /* Set initial time */
+  rtimer_arch_wakeup_time = rtimer_arch_now();
 }
 /*---------------------------------------------------------------------------*/
 void
 rtimer_arch_request_poll(void)
 {
-	// Run next timer
-	rtimer_run_next();
+  /* Run next timer */
+  rtimer_run_next();
 }
 /*---------------------------------------------------------------------------*/
 int
 rtimer_arch_pending(void)
 {
-	// Check if timer is expired
-	if (rtimer_arch_now() >= rtimer_arch_wakeup_time)
-	{
-		return 1;
-	}
+  /* Check if timer is expired */
+  if(rtimer_arch_now() >= rtimer_arch_wakeup_time) {
+    return 1;
+  }
 
-	return 0;
+  return 0;
 }
 /*---------------------------------------------------------------------------*/
 void
 rtimer_arch_schedule(rtimer_clock_t t)
 {
-	// Save next wake up time
-	rtimer_arch_wakeup_time = t;
+  /* Save next wake up time */
+  rtimer_arch_wakeup_time = t;
 }
 /*---------------------------------------------------------------------------*/

@@ -69,7 +69,7 @@ typedef uint32_t uip_stats_t;
 
 /* Platform MSP430 emulation for CC2520 driver */
 #ifndef BV
-#define BV(x) (1<<(x))
+#define BV(x) (1 << (x))
 #endif
 
 /*
@@ -77,7 +77,7 @@ typedef uint32_t uip_stats_t;
  * RTIMER_CLOCK_LT to override this
  */
 typedef uint32_t rtimer_clock_t;
-#define RTIMER_CLOCK_LT(a,b)	((int32_t)((a)-(b)) < 0)
+#define RTIMER_CLOCK_LT(a, b)  ((int32_t)((a) - (b)) < 0)
 
 /*---------------------------------------------------------------------------*/
 /**
@@ -87,20 +87,20 @@ typedef uint32_t rtimer_clock_t;
  */
 #if defined(USE_FREERTOS) || defined(USE_TIRTOS)
 #ifndef HEAP_CONF_SIZE
-#define HEAP_CONF_SIZE  			0x00010000 /* 64 KiB */
+#define HEAP_CONF_SIZE        0x00010000 /* 64 KiB */
 #endif
 
 #ifndef MTARCH_CONF_STACKSIZE
-#define MTARCH_CONF_STACKSIZE		0x00000800 /*  2 KiB */
+#define MTARCH_CONF_STACKSIZE   0x00000800 /*  2 KiB */
 #endif
 #else
 #ifndef HEAP_CONF_SIZE
-#define HEAP_CONF_SIZE  			0x00002000 /*  8 KiB */
+#define HEAP_CONF_SIZE        0x00002000 /*  8 KiB */
 #endif
 #endif
 
 #ifndef CONTIKI_CONF_STACKSIZE
-#define CONTIKI_CONF_STACKSIZE		0x00008000 /* 32 KiB */
+#define CONTIKI_CONF_STACKSIZE    0x00008000 /* 32 KiB */
 #endif
 /** @} */
 
@@ -111,7 +111,7 @@ typedef uint32_t rtimer_clock_t;
  * @{
  */
 #ifndef WATCHDOG_CONF_ENABLE
-#define WATCHDOG_CONF_ENABLE		1 /**< Enable the watchdog timer */
+#define WATCHDOG_CONF_ENABLE    1 /**< Enable the watchdog timer */
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -125,11 +125,11 @@ typedef uint32_t rtimer_clock_t;
 #endif
 
 #ifndef LOG_CONF_ENABLED
-#define LOG_CONF_ENABLED 			1 /**< Set to 1 to enable system logging */
+#define LOG_CONF_ENABLED      1 /**< Set to 1 to enable system logging */
 #endif
 
 #ifndef UIP_CONF_LOGGING
-#define UIP_CONF_LOGGING 			1 /**< Set to 1 to enable network stack logging */
+#define UIP_CONF_LOGGING      1 /**< Set to 1 to enable network stack logging */
 #endif
 /** @} */
 
@@ -182,7 +182,7 @@ typedef uint32_t rtimer_clock_t;
  * This will keep working while UIP_FALLBACK_INTERFACE and CMD_CONF_OUTPUT
  * keep using SLIP
  */
-#if defined (UIP_FALLBACK_INTERFACE) || defined (CMD_CONF_OUTPUT)
+#if defined(UIP_FALLBACK_INTERFACE) || defined(CMD_CONF_OUTPUT)
 #define SLIP_ARCH_CONF_ENABLED      1
 #endif
 #endif
@@ -215,10 +215,10 @@ typedef uint32_t rtimer_clock_t;
 #define STARTUP_CONF_VERBOSE        0
 
 #undef LOG_CONF_ENABLED
-#define LOG_CONF_ENABLED 			0
+#define LOG_CONF_ENABLED      0
 
 #undef UIP_CONF_LOGGING
-#define UIP_CONF_LOGGING 			0
+#define UIP_CONF_LOGGING      0
 
 /* Little sanity check: We can't have quiet sniffers */
 #if CC2520_RF_CONF_SNIFFER
@@ -249,13 +249,13 @@ typedef uint32_t rtimer_clock_t;
 #define UART_IN_USE_BY_UART1(u)       (UART1_CONF_UART == (u))
 
 #define UART_IN_USE(u) ( \
-  UART_CONF_ENABLE && \
-  (UART_IN_USE_BY_SERIAL_LINE(u) || \
-   UART_IN_USE_BY_SLIP(u) || \
-   UART_IN_USE_BY_RF_SNIFFER(u) || \
-   UART_IN_USE_BY_DBG(u) || \
-   UART_IN_USE_BY_UART1(u)) \
-)
+    UART_CONF_ENABLE && \
+    (UART_IN_USE_BY_SERIAL_LINE(u) || \
+     UART_IN_USE_BY_SLIP(u) || \
+     UART_IN_USE_BY_RF_SNIFFER(u) || \
+     UART_IN_USE_BY_DBG(u) || \
+     UART_IN_USE_BY_UART1(u)) \
+    )
 /** @} */
 /*---------------------------------------------------------------------------*/
 /* platform-conf.h assumes that basic configuration is done */
@@ -282,7 +282,7 @@ typedef uint32_t rtimer_clock_t;
 
 #ifndef NETSTACK_CONF_RDC
 /* #define NETSTACK_CONF_RDC     contikimac_driver */
-#define NETSTACK_CONF_RDC	  sicslowmac_driver
+#define NETSTACK_CONF_RDC   sicslowmac_driver
 #endif
 
 #ifndef NETSTACK_CONF_RDC_CHANNEL_CHECK_RATE
@@ -404,8 +404,8 @@ typedef uint32_t rtimer_clock_t;
 #define SICSLOWPAN_CONF_MAX_ADDR_CONTEXTS    1
 #ifndef SICSLOWPAN_CONF_ADDR_CONTEXT_0
 #define SICSLOWPAN_CONF_ADDR_CONTEXT_0 { \
-  addr_contexts[0].prefix[0] = 0xaa; \
-  addr_contexts[0].prefix[1] = 0xaa; \
+    addr_contexts[0].prefix[0] = 0xaa; \
+    addr_contexts[0].prefix[1] = 0xaa; \
 }
 #endif
 

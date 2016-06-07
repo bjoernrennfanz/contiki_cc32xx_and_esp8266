@@ -40,7 +40,7 @@
  * @{
  *
  * \file
- * 		Implementation of the cc32xx IP64 Wireless Network driver
+ *    Implementation of the cc32xx IP64 Wireless Network driver
  * \author
  *      Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */
@@ -60,51 +60,49 @@ PROCESS(wifi_ip64_driver_process, "CC32xx WLAN IP64 driver");
 static void
 wifi_ip64_init(void)
 {
-	uint32_t hostaddr = uip_htonl(wifi_own_ip);
-	uint32_t netmask = uip_htonl(wifi_netmask);
-	uint32_t gateway = uip_htonl(wifi_gateway);
+  uint32_t hostaddr = uip_htonl(wifi_own_ip);
+  uint32_t netmask = uip_htonl(wifi_netmask);
+  uint32_t gateway = uip_htonl(wifi_gateway);
 
-	// Setup Ethernet address
-	memcpy(ip64_eth_addr.addr, wifi_mac_addr, sizeof(wifi_mac_addr));
+  /* Setup Ethernet address */
+  memcpy(ip64_eth_addr.addr, wifi_mac_addr, sizeof(wifi_mac_addr));
 
-	// Setup IP, Gateway and Netmask
-	ip64_set_hostaddr((uip_ip4addr_t *)&hostaddr);
-	ip64_set_netmask((uip_ip4addr_t *)&netmask);
-	ip64_set_draddr((uip_ip4addr_t *)&gateway);
+  /* Setup IP, Gateway and Netmask */
+  ip64_set_hostaddr((uip_ip4addr_t *)&hostaddr);
+  ip64_set_netmask((uip_ip4addr_t *)&netmask);
+  ip64_set_draddr((uip_ip4addr_t *)&gateway);
 
-	// Startup driver process
-	process_start(&wifi_ip64_driver_process, NULL);
+  /* Startup driver process */
+  process_start(&wifi_ip64_driver_process, NULL);
 }
 /*---------------------------------------------------------------------------*/
 static int
 wifi_ip64_output(uint8_t *packet, uint16_t len)
 {
-	wifi_send(packet, len);
-	return len;
+  wifi_send(packet, len);
+  return len;
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(wifi_ip64_driver_process, ev, data)
 {
-	static int len;
-	static struct etimer e;
-	PROCESS_BEGIN();
+  static int len;
+  static struct etimer e;
+  PROCESS_BEGIN();
 
-	while(1)
-	{
-		etimer_set(&e, 1);
-		PROCESS_WAIT_EVENT();
-		len = wifi_read(ip64_packet_buffer, ip64_packet_buffer_maxlen);
-		if(len > 0)
-		{
-			IP64_INPUT(ip64_packet_buffer, len);
-		}
-	}
+  while(1) {
+    etimer_set(&e, 1);
+    PROCESS_WAIT_EVENT();
+    len = wifi_read(ip64_packet_buffer, ip64_packet_buffer_maxlen);
+    if(len > 0) {
+      IP64_INPUT(ip64_packet_buffer, len);
+    }
+  }
 
-	PROCESS_END();
+  PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
 const struct ip64_driver wifi_ip64_driver = {
-	wifi_ip64_init,
-	wifi_ip64_output
+  wifi_ip64_init,
+  wifi_ip64_output
 };
 /*---------------------------------------------------------------------------*/

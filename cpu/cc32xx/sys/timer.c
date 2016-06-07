@@ -124,7 +124,6 @@ timer_expired(struct timer *t)
      t->interval < diff - required to avoid an internal error in mspgcc. */
   clock_time_t diff = (clock_time() - t->start) + 1;
   return t->interval < diff;
-
 }
 /*---------------------------------------------------------------------------*/
 /**

@@ -44,7 +44,7 @@
  * cc3200-launchxl platform
  *
  * \author
- * 		   Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
+ *       Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  *         Dominik Grauert <dominik.grauert@3bscientific.com>
  */
 
@@ -62,7 +62,7 @@
 #if DEBUG
 #define PRINTF(...) printf(__VA_ARGS__)
 #else
-#define PRINTF(...) do {} while (0)
+#define PRINTF(...) do {} while(0)
 #endif
 
 /*
@@ -79,11 +79,11 @@ static uint8_t cc2520_arch_fifop_int;
 void
 cc2520_arch_init(void)
 {
-	// Initialize cc32xx SPI driver
-	spi_init();
+  /* Initialize cc32xx SPI driver */
+  spi_init();
 
-	// Unselect radio
-	CC2520_SPI_DISABLE();
+  /* Unselect radio */
+  CC2520_SPI_DISABLE();
 }
 /*---------------------------------------------------------------------------*/
 uint8_t
@@ -97,41 +97,39 @@ cc2520_arch_getreg(uint16_t regname)
 static void
 cc2520_arch_int_pollhandler()
 {
-	// Check if soft interrupt is enabled
-	if (cc2520_arch_fifop_int)
-	{
-		// Poll own process
-		process_poll(&cc2520_arch_int_process);
+  /* Check if soft interrupt is enabled */
+  if(cc2520_arch_fifop_int) {
+    /* Poll own process */
+    process_poll(&cc2520_arch_int_process);
 
-		// Check if packet is pending
-		if (CC2520_FIFOP_IS_1)
-		{
-			// Fire CC2520 interrupt handler
-			cc2520_interrupt();
-		}
-	}
+    /* Check if packet is pending */
+    if(CC2520_FIFOP_IS_1) {
+      /* Fire CC2520 interrupt handler */
+      cc2520_interrupt();
+    }
+  }
 }
 /*---------------------------------------------------------------------------*/
 void
 cc2520_arch_fifop_int_init()
 {
-	// Start soft interrupt process
-	process_start(&cc2520_arch_int_process, NULL);
+  /* Start soft interrupt process */
+  process_start(&cc2520_arch_int_process, NULL);
 }
 /*---------------------------------------------------------------------------*/
 void
 cc2520_arch_enable_fifop_int()
 {
-	// Enable soft interrupt
-	cc2520_arch_fifop_int = true;
-	process_poll(&cc2520_arch_int_process);
+  /* Enable soft interrupt */
+  cc2520_arch_fifop_int = true;
+  process_poll(&cc2520_arch_int_process);
 }
 /*---------------------------------------------------------------------------*/
 void
 cc2520_arch_disable_fifop_int()
 {
-	// Disable soft interrupt
-	cc2520_arch_fifop_int = false;
+  /* Disable soft interrupt */
+  cc2520_arch_fifop_int = false;
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(cc2520_arch_int_process, ev, data)

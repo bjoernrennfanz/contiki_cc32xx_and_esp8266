@@ -57,28 +57,28 @@ void spi_wait_tx_ready(void);
 void spi_wait_tx_ended(void);
 
 /* SPI buffer dummy's */
-#define SPI_RXBUF	spi_get_rxbuf()
-#define SPI_TXBUF	spi_txbuf;
+#define SPI_RXBUF spi_get_rxbuf()
+#define SPI_TXBUF spi_txbuf;
 
 /* Define SPI macros used by CC2x20 drivers */
-#define SPI_WAITFORTxREADY()	spi_wait_tx_ready()
-#define SPI_WAITFORTx_BEFORE() 	SPI_WAITFORTxREADY()
+#define SPI_WAITFORTxREADY()  spi_wait_tx_ready()
+#define SPI_WAITFORTx_BEFORE()  SPI_WAITFORTxREADY()
 #define SPI_WAITFORTx_AFTER()
-#define SPI_WAITFORTx_ENDED()	spi_wait_tx_ended()
+#define SPI_WAITFORTx_ENDED() spi_wait_tx_ended()
 
 /* Write one character to SPI */
-#define SPI_WRITE(data)			spi_write(data)
+#define SPI_WRITE(data)     spi_write(data)
 
 /* Write one character to SPI - will not wait for end
    useful for multiple writes with wait after final */
-#define SPI_WRITE_FAST(data)	spi_write(data)
+#define SPI_WRITE_FAST(data)  spi_write(data)
 
 /* Read one character from SPI */
-#define SPI_READ(data)			data = spi_read()
+#define SPI_READ(data)      data = spi_read()
 
 /* Flush the SPI read register */
 #ifndef SPI_FLUSH
-#define SPI_FLUSH()				spi_flush()
+#define SPI_FLUSH()       spi_flush()
 #endif
 
 #endif /* SPI_H_ */

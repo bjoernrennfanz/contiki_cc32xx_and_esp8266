@@ -44,11 +44,11 @@
 #include "clock-arch.h"
 
 #if defined(USE_FREERTOS) || defined(USE_TIRTOS)
-#define RTIMER_ARCH_SECOND 	CLOCK_CONF_SECOND
-#define rtimer_arch_now() 	clock_time()
+#define RTIMER_ARCH_SECOND  CLOCK_CONF_SECOND
+#define rtimer_arch_now()   clock_time()
 #else
-#define RTIMER_ARCH_SECOND 	32768UL
-#define rtimer_arch_now() 	clock_arch_get_tick_count()
+#define RTIMER_ARCH_SECOND  32768UL
+#define rtimer_arch_now()   clock_arch_get_tick_count()
 #endif
 
 /**

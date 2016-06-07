@@ -51,56 +51,55 @@
 
 #include "dev/leds.h"
 
-
 #include "lib/petsciiconv.h"
 
 static struct httpd_cgi_call *calls = NULL;
 
 static const char closed[] =   /*  "CLOSED",*/
-{0x43, 0x4c, 0x4f, 0x53, 0x45, 0x44, 0};
+{ 0x43, 0x4c, 0x4f, 0x53, 0x45, 0x44, 0 };
 static const char syn_rcvd[] = /*  "SYN-RCVD",*/
-{0x53, 0x59, 0x4e, 0x2d, 0x52, 0x43, 0x56,
- 0x44,  0};
+{ 0x53, 0x59, 0x4e, 0x2d, 0x52, 0x43, 0x56,
+  0x44, 0 };
 static const char syn_sent[] = /*  "SYN-SENT",*/
-{0x53, 0x59, 0x4e, 0x2d, 0x53, 0x45, 0x4e,
- 0x54,  0};
+{ 0x53, 0x59, 0x4e, 0x2d, 0x53, 0x45, 0x4e,
+  0x54, 0 };
 static const char established[] = /*  "ESTABLISHED",*/
-{0x45, 0x53, 0x54, 0x41, 0x42, 0x4c, 0x49,
- 0x53, 0x48, 0x45, 0x44, 0};
+{ 0x45, 0x53, 0x54, 0x41, 0x42, 0x4c, 0x49,
+  0x53, 0x48, 0x45, 0x44, 0 };
 static const char fin_wait_1[] = /*  "FIN-WAIT-1",*/
-{0x46, 0x49, 0x4e, 0x2d, 0x57, 0x41, 0x49,
- 0x54, 0x2d, 0x31, 0};
+{ 0x46, 0x49, 0x4e, 0x2d, 0x57, 0x41, 0x49,
+  0x54, 0x2d, 0x31, 0 };
 static const char fin_wait_2[] = /*  "FIN-WAIT-2",*/
-{0x46, 0x49, 0x4e, 0x2d, 0x57, 0x41, 0x49,
- 0x54, 0x2d, 0x32, 0};
+{ 0x46, 0x49, 0x4e, 0x2d, 0x57, 0x41, 0x49,
+  0x54, 0x2d, 0x32, 0 };
 static const char closing[] = /*  "CLOSING",*/
-{0x43, 0x4c, 0x4f, 0x53, 0x49,
- 0x4e, 0x47, 0};
+{ 0x43, 0x4c, 0x4f, 0x53, 0x49,
+  0x4e, 0x47, 0 };
 static const char time_wait[] = /*  "TIME-WAIT,"*/
-{0x54, 0x49, 0x4d, 0x45, 0x2d, 0x57, 0x41,
- 0x49, 0x54, 0};
+{ 0x54, 0x49, 0x4d, 0x45, 0x2d, 0x57, 0x41,
+  0x49, 0x54, 0 };
 static const char last_ack[] = /*  "LAST-ACK"*/
-{0x4c, 0x41, 0x53, 0x54, 0x2d, 0x41, 0x43,
- 0x4b, 0};
+{ 0x4c, 0x41, 0x53, 0x54, 0x2d, 0x41, 0x43,
+  0x4b, 0 };
 static const char none[] = /*  "NONE"*/
-{0x4e, 0x4f, 0x4e, 0x45, 0};
+{ 0x4e, 0x4f, 0x4e, 0x45, 0 };
 static const char running[] = /*  "RUNNING"*/
-{0x52, 0x55, 0x4e, 0x4e, 0x49, 0x4e, 0x47,
- 0};
+{ 0x52, 0x55, 0x4e, 0x4e, 0x49, 0x4e, 0x47,
+  0 };
 static const char called[] = /*  "CALLED"*/
-{0x43, 0x41, 0x4c, 0x4c, 0x45, 0x44, 0};
+{ 0x43, 0x41, 0x4c, 0x4c, 0x45, 0x44, 0 };
 static const char file_name[] = /*  "file-stats"*/
-{0x66, 0x69, 0x6c, 0x65, 0x2d, 0x73, 0x74,
- 0x61, 0x74, 0x73, 0};
+{ 0x66, 0x69, 0x6c, 0x65, 0x2d, 0x73, 0x74,
+  0x61, 0x74, 0x73, 0 };
 static const char tcp_name[] = /*  "tcp-connections"*/
-{0x74, 0x63, 0x70, 0x2d, 0x63, 0x6f, 0x6e,
- 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e,
- 0x73, 0};
+{ 0x74, 0x63, 0x70, 0x2d, 0x63, 0x6f, 0x6e,
+  0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e,
+  0x73, 0 };
 static const char proc_name[] = /*  "processes"*/
-{0x70, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73,
- 0x65, 0x73, 0};
+{ 0x70, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73,
+  0x65, 0x73, 0 };
 static const char togglegreen_name[] = /*  "togglegreen"*/
-{0x74, 0x6f, 0x67, 0x67, 0x6c, 0x65, 0x67, 0x72, 0x65, 0x65, 0x6e, 0};
+{ 0x74, 0x6f, 0x67, 0x67, 0x6c, 0x65, 0x67, 0x72, 0x65, 0x65, 0x6e, 0 };
 
 static const char *states[] = {
   closed,
@@ -114,7 +113,8 @@ static const char *states[] = {
   last_ack,
   none,
   running,
-  called};
+  called
+};
 
 /*---------------------------------------------------------------------------*/
 static
@@ -150,8 +150,8 @@ PT_THREAD(file_stats(struct httpd_state *s, char *ptr))
 {
   PSOCK_BEGIN(&s->sout);
 
-  PSOCK_GENERATOR_SEND(&s->sout, generate_file_stats, (void *) (strchr(ptr, ' ') + 1));
-  
+  PSOCK_GENERATOR_SEND(&s->sout, generate_file_stats, (void *)(strchr(ptr, ' ') + 1));
+
   PSOCK_END(&s->sout);
 }
 /*---------------------------------------------------------------------------*/
@@ -166,36 +166,36 @@ make_tcp_stats(void *arg)
   char buf[48];
   httpd_sprint_ip6(conn->ripaddr, buf);
   return snprintf((char *)uip_appdata, uip_mss(),
-         "<tr align=\"center\"><td>%d</td><td>%s:%u</td><td>%s</td><td>%u</td><td>%u</td><td>%c %c</td></tr>\r\n",
-         uip_htons(conn->lport),
-         buf,
-         uip_htons(conn->rport),
-         states[conn->tcpstateflags & UIP_TS_MASK],
-         conn->nrtx,
-         conn->timer,
-         (uip_outstanding(conn))? '*':' ',
-         (uip_stopped(conn))? '!':' ');
+                  "<tr align=\"center\"><td>%d</td><td>%s:%u</td><td>%s</td><td>%u</td><td>%u</td><td>%c %c</td></tr>\r\n",
+                  uip_htons(conn->lport),
+                  buf,
+                  uip_htons(conn->rport),
+                  states[conn->tcpstateflags & UIP_TS_MASK],
+                  conn->nrtx,
+                  conn->timer,
+                  (uip_outstanding(conn)) ? '*' : ' ',
+                  (uip_stopped(conn)) ? '!' : ' ');
 #else
   return snprintf((char *)uip_appdata, uip_mss(),
-         "<tr align=\"center\"><td>%d</td><td>%u.%u.%u.%u:%u</td><td>%s</td><td>%u</td><td>%u</td><td>%c %c</td></tr>\r\n",
-         uip_htons(conn->lport),
-         conn->ripaddr.u8[0],
-         conn->ripaddr.u8[1],
-         conn->ripaddr.u8[2],
-         conn->ripaddr.u8[3],
-         uip_htons(conn->rport),
-         states[conn->tcpstateflags & UIP_TS_MASK],
-         conn->nrtx,
-         conn->timer,
-        (uip_outstanding(conn))? '*':' ',
-        (uip_stopped(conn))? '!':' ');
+                  "<tr align=\"center\"><td>%d</td><td>%u.%u.%u.%u:%u</td><td>%s</td><td>%u</td><td>%u</td><td>%c %c</td></tr>\r\n",
+                  uip_htons(conn->lport),
+                  conn->ripaddr.u8[0],
+                  conn->ripaddr.u8[1],
+                  conn->ripaddr.u8[2],
+                  conn->ripaddr.u8[3],
+                  uip_htons(conn->rport),
+                  states[conn->tcpstateflags & UIP_TS_MASK],
+                  conn->nrtx,
+                  conn->timer,
+                  (uip_outstanding(conn)) ? '*' : ' ',
+                  (uip_stopped(conn)) ? '!' : ' ');
 #endif /* NETSTACK_CONF_WITH_IPV6 */
 }
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(tcp_stats(struct httpd_state *s, char *ptr))
 {
-  
+
   PSOCK_BEGIN(&s->sout);
 
   for(s->u.count = 0; s->u.count < UIP_CONNS; ++s->u.count) {
@@ -211,15 +211,15 @@ static unsigned short
 make_processes(void *p)
 {
   char name[40];
- 
+
   strncpy(name, PROCESS_NAME_STRING((struct process *)p), 40);
   petsciiconv_toascii(name, 40);
 
   return snprintf((char *)uip_appdata, uip_mss(),
-		 "<tr align=\"center\"><td>%p</td><td>%s</td><td>%p</td><td>%s</td></tr>\r\n",
-		 p, name,
-		 *((char **)&(((struct process *)p)->thread)),
-		 states[9 + ((struct process *)p)->state]);
+                  "<tr align=\"center\"><td>%p</td><td>%s</td><td>%p</td><td>%s</td></tr>\r\n",
+                  p, name,
+                  *((char **)&(((struct process *)p)->thread)),
+                  states[9 + ((struct process *)p)->state]);
 }
 /*---------------------------------------------------------------------------*/
 static
@@ -254,18 +254,18 @@ extern uip_ds6_netif_t uip_ds6_if;
 static unsigned short
 make_addresses(void *p)
 {
-uint8_t i,j=0;
-uint16_t numprinted;
-  numprinted = httpd_snprintf((char *)uip_appdata, uip_mss(),httpd_cgi_addrh);
-  for (i=0; i<UIP_DS6_ADDR_NB;i++) {
-    if (uip_ds6_if.addr_list[i].isused) {
+  uint8_t i, j = 0;
+  uint16_t numprinted;
+  numprinted = httpd_snprintf((char *)uip_appdata, uip_mss(), httpd_cgi_addrh);
+  for(i = 0; i < UIP_DS6_ADDR_NB; i++) {
+    if(uip_ds6_if.addr_list[i].isused) {
       j++;
       numprinted += httpd_cgi_sprint_ip6(uip_ds6_if.addr_list[i].ipaddr, uip_appdata + numprinted);
-      numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_addrb); 
+      numprinted += httpd_snprintf((char *)uip_appdata + numprinted, uip_mss() - numprinted, httpd_cgi_addrb);
     }
   }
-//if (j==0) numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_addrn);
-  numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_addrf, UIP_DS6_ADDR_NB-j); 
+/* if (j==0) numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_addrn); */
+  numprinted += httpd_snprintf((char *)uip_appdata + numprinted, uip_mss() - numprinted, httpd_cgi_addrf, UIP_DS6_ADDR_NB - j);
   return numprinted;
 }
 /*---------------------------------------------------------------------------*/
@@ -278,23 +278,23 @@ PT_THREAD(addresses(struct httpd_state *s, char *ptr))
 
   PSOCK_END(&s->sout);
 }
-/*---------------------------------------------------------------------------*/	
+/*---------------------------------------------------------------------------*/
 static unsigned short
 make_neighbors(void *p)
 {
-uint8_t i,j=0;
-uint16_t numprinted;
-  numprinted = httpd_snprintf((char *)uip_appdata, uip_mss(),httpd_cgi_addrh);
+  uint8_t i, j = 0;
+  uint16_t numprinted;
+  numprinted = httpd_snprintf((char *)uip_appdata, uip_mss(), httpd_cgi_addrh);
   uip_ds6_nbr_t *nbr;
   for(nbr = nbr_table_head(ds6_neighbors);
       nbr != NULL;
       nbr = nbr_table_next(ds6_neighbors, nbr)) {
     j++;
     numprinted += httpd_cgi_sprint_ip6(nbr->ipaddr, uip_appdata + numprinted);
-    numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_addrb);
+    numprinted += httpd_snprintf((char *)uip_appdata + numprinted, uip_mss() - numprinted, httpd_cgi_addrb);
   }
-//if (j==0) numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_addrn);
-  numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_addrf,NBR_TABLE_MAX_NEIGHBORS-j);
+/* if (j==0) numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_addrn); */
+  numprinted += httpd_snprintf((char *)uip_appdata + numprinted, uip_mss() - numprinted, httpd_cgi_addrf, NBR_TABLE_MAX_NEIGHBORS - j);
   return numprinted;
 }
 /*---------------------------------------------------------------------------*/
@@ -303,37 +303,39 @@ PT_THREAD(neighbors(struct httpd_state *s, char *ptr))
 {
   PSOCK_BEGIN(&s->sout);
 
-  PSOCK_GENERATOR_SEND(&s->sout, make_neighbors, s->u.ptr);  
-  
+  PSOCK_GENERATOR_SEND(&s->sout, make_neighbors, s->u.ptr);
+
   PSOCK_END(&s->sout);
 }
-/*---------------------------------------------------------------------------*/			
+/*---------------------------------------------------------------------------*/
 static unsigned short
 make_routes(void *p)
 {
   static const char httpd_cgi_rtes1[] HTTPD_STRING_ATTR = "(%u (via ";
   static const char httpd_cgi_rtes2[] HTTPD_STRING_ATTR = ") %lus<br>";
   static const char httpd_cgi_rtes3[] HTTPD_STRING_ATTR = ")<br>";
-  uint8_t i,j=0;
+  uint8_t i, j = 0;
   uint16_t numprinted;
   uip_ds6_route_t *r;
 
-  numprinted = httpd_snprintf((char *)uip_appdata, uip_mss(),httpd_cgi_addrh);
+  numprinted = httpd_snprintf((char *)uip_appdata, uip_mss(), httpd_cgi_addrh);
   for(r = uip_ds6_route_head();
       r != NULL;
       r = uip_ds6_route_next(r)) {
     j++;
     numprinted += httpd_cgi_sprint_ip6(r->ipaddr, uip_appdata + numprinted);
-    numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_rtes1, r->length);
+    numprinted += httpd_snprintf((char *)uip_appdata + numprinted, uip_mss() - numprinted, httpd_cgi_rtes1, r->length);
     numprinted += httpd_cgi_sprint_ip6(uip_ds6_route_nexthop(r), uip_appdata + numprinted);
     if(r->state.lifetime < 3600) {
-      numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_rtes2, r->state.lifetime);
+      numprinted += httpd_snprintf((char *)uip_appdata + numprinted, uip_mss() - numprinted, httpd_cgi_rtes2, r->state.lifetime);
     } else {
-      numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_rtes3);
+      numprinted += httpd_snprintf((char *)uip_appdata + numprinted, uip_mss() - numprinted, httpd_cgi_rtes3);
     }
   }
-  if (j==0) numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_addrn);
-  numprinted += httpd_snprintf((char *)uip_appdata+numprinted, uip_mss()-numprinted, httpd_cgi_addrf,UIP_DS6_ROUTE_NB-j);
+  if(j == 0) {
+    numprinted += httpd_snprintf((char *)uip_appdata + numprinted, uip_mss() - numprinted, httpd_cgi_addrn);
+  }
+  numprinted += httpd_snprintf((char *)uip_appdata + numprinted, uip_mss() - numprinted, httpd_cgi_addrf, UIP_DS6_ROUTE_NB - j);
   return numprinted;
 }
 /*---------------------------------------------------------------------------*/
@@ -341,9 +343,9 @@ static
 PT_THREAD(routes(struct httpd_state *s, char *ptr))
 {
   PSOCK_BEGIN(&s->sout);
- 
-  PSOCK_GENERATOR_SEND(&s->sout, make_routes, s->u.ptr); 
- 
+
+  PSOCK_GENERATOR_SEND(&s->sout, make_routes, s->u.ptr);
+
   PSOCK_END(&s->sout);
 }
 #endif /* WEBSERVER_CONF_STATUSPAGE */
@@ -351,7 +353,7 @@ PT_THREAD(routes(struct httpd_state *s, char *ptr))
 static
 PT_THREAD(toggle_led())
 {
-	leds_toggle(LEDS_GREEN);
+  leds_toggle(LEDS_GREEN);
 }
 /*---------------------------------------------------------------------------*/
 void
@@ -363,15 +365,16 @@ httpd_cgi_add(struct httpd_cgi_call *c)
   if(calls == NULL) {
     calls = c;
   } else {
-    for(l = calls; l->next != NULL; l = l->next);
+    for(l = calls; l->next != NULL; l = l->next) {
+    }
     l->next = c;
   }
 }
 /*---------------------------------------------------------------------------*/
 #if WEBSERVER_CONF_STATUSPAGE && NETSTACK_CONF_WITH_IPV6
-static const char   adrs_name[] HTTPD_STRING_ATTR = "addresses";
-static const char   nbrs_name[] HTTPD_STRING_ATTR = "neighbors";
-static const char   rtes_name[] HTTPD_STRING_ATTR = "routes";
+static const char adrs_name[] HTTPD_STRING_ATTR = "addresses";
+static const char nbrs_name[] HTTPD_STRING_ATTR = "neighbors";
+static const char rtes_name[] HTTPD_STRING_ATTR = "routes";
 #endif
 HTTPD_CGI_CALL(file, file_name, file_stats);
 HTTPD_CGI_CALL(tcp, tcp_name, tcp_stats);

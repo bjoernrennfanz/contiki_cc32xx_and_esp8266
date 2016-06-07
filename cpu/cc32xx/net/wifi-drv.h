@@ -40,7 +40,7 @@
  * @{
  *
  * \file
- * 		Headers of the cc32xx Wireless Network driver
+ *    Headers of the cc32xx Wireless Network driver
  * \author
  *      Björn Rennfanz <bjoern.rennfanz@3bscientific.com>
  */

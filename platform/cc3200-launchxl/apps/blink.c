@@ -47,7 +47,8 @@ PROCESS(blink_process, "Blink");
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(blink_process, ev, data)
 {
-  PROCESS_EXITHANDLER(goto exit;)
+  PROCESS_EXITHANDLER(goto exit;
+                      )
   PROCESS_BEGIN();
 
   while(1) {
@@ -60,7 +61,7 @@ PROCESS_THREAD(blink_process, ev, data)
     leds_off(LEDS_RED);
   }
 
- exit:
+exit:
   leds_off(LEDS_RED);
   PROCESS_END();
 }

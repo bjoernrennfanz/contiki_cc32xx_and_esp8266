@@ -76,7 +76,7 @@ static
 PT_THREAD(send_file(struct httpd_state *s))
 {
   PSOCK_BEGIN(&s->sout);
-  
+
   do {
     /* Read data from file system into buffer */
     s->len = cfs_read(s->fd, s->outputbuf, sizeof(s->outputbuf));
@@ -88,7 +88,7 @@ PT_THREAD(send_file(struct httpd_state *s))
       break;
     }
   } while(s->len > 0);
-      
+
   PSOCK_END(&s->sout);
 }
 /*---------------------------------------------------------------------------*/
@@ -160,7 +160,7 @@ PT_THREAD(handle_output(struct httpd_state *s))
     webserver_log_file(&uip_conn->ripaddr, "404 - notfound.htm");
   } else {
     PT_WAIT_THREAD(&s->outputpt,
-		   send_headers(s, http_header_200));
+                   send_headers(s, http_header_200));
   }
   PT_WAIT_THREAD(&s->outputpt, send_file(s));
   cfs_close(s->fd);
@@ -175,7 +175,7 @@ PT_THREAD(handle_input(struct httpd_state *s))
   PSOCK_BEGIN(&s->sin);
 
   PSOCK_READTO(&s->sin, ISO_space);
-  
+
   if(strncmp(s->inputbuf, http_get, 4) != 0) {
     PSOCK_CLOSE_EXIT(&s->sin);
   }
@@ -211,7 +211,7 @@ PT_THREAD(handle_input(struct httpd_state *s))
       webserver_log(s->inputbuf);
     }
   }
-  
+
   PSOCK_END(&s->sin);
 }
 /*---------------------------------------------------------------------------*/
@@ -233,7 +233,7 @@ httpd_appcall(void *state)
     if(s != NULL) {
       if(s->fd >= 0) {
         cfs_close(s->fd);
-	s->fd = -1;
+        s->fd = -1;
       }
       memb_free(&conns, s);
     }
@@ -255,11 +255,11 @@ httpd_appcall(void *state)
   } else if(s != NULL) {
     if(uip_poll()) {
       if(timer_expired(&s->timer)) {
-	uip_abort();
-	if(s->fd >= 0) {
-	  cfs_close(s->fd);
-	  s->fd = -1;
-	}
+        uip_abort();
+        if(s->fd >= 0) {
+          cfs_close(s->fd);
+          s->fd = -1;
+        }
         memb_free(&conns, s);
         webserver_log_file(&uip_conn->ripaddr, "reset (timeout)");
       }

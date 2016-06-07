@@ -42,7 +42,7 @@
 
 #include "dev/leds.h"
 #include "dev/watchdog.h"
-// #include "dev/button-sensor.h"
+/* #include "dev/button-sensor.h" */
 #include "dev/serial-line.h"
 #include "dev/slip.h"
 #include "dev/cc2520/cc2520.h"
@@ -89,7 +89,7 @@
 void
 uip_log(char *msg)
 {
-	PUTS(msg);
+  PUTS(msg);
 }
 #endif /* UIP_CONF_LOGGING */
 
@@ -98,7 +98,7 @@ uip_log(char *msg)
 void
 log_message(char *m1, char *m2)
 {
-	PRINTF("%s%s\n", m1, m2);
+  PRINTF("%s%s\n", m1, m2);
 }
 #endif /* LOG_CONF_ENABLED */
 
@@ -113,46 +113,45 @@ fade(unsigned char l)
 
     leds_on(l);
     for(i = 0; i < j; ++i) {
-      asm("nop");
+      asm ("nop");
     }
     leds_off(l);
     for(i = 0; i < 2000 - j; ++i) {
-      asm("nop");
+      asm ("nop");
     }
   }
 }
-
 /*---------------------------------------------------------------------------*/
 static void
 set_rf_params(void)
 {
-	uint16_t short_addr;
-	uint8_t ext_addr[8];
+  uint16_t short_addr;
+  uint8_t ext_addr[8];
 
-	// Generate ZigBee address from Wifi MAC address
-	memset(&ext_addr[0], 0x3B, sizeof(ext_addr));
-	memcpy(&ext_addr[1], &wifi_mac_addr[0], sizeof(wifi_mac_addr));
+  /* Generate ZigBee address from Wifi MAC address */
+  memset(&ext_addr[0], 0x3B, sizeof(ext_addr));
+  memcpy(&ext_addr[1], &wifi_mac_addr[0], sizeof(wifi_mac_addr));
 
-	short_addr = ext_addr[7];
-	short_addr |= ext_addr[6] << 8;
+  short_addr = ext_addr[7];
+  short_addr |= ext_addr[6] << 8;
 
-	/* Populate linkaddr_node_addr. Maintain endianness */
-	memcpy(&linkaddr_node_addr, &ext_addr[8 - LINKADDR_SIZE], LINKADDR_SIZE);
+  /* Populate linkaddr_node_addr. Maintain endianness */
+  memcpy(&linkaddr_node_addr, &ext_addr[8 - LINKADDR_SIZE], LINKADDR_SIZE);
 
-	#if STARTUP_CONF_VERBOSE
-	{
-		int i;
-		PRINTF("Rime configured with address ");
-		for(i = 0; i < LINKADDR_SIZE - 1; i++) {
-			PRINTF("%02x:", linkaddr_node_addr.u8[i]);
-		}
-		PRINTF("%02x\n", linkaddr_node_addr.u8[i]);
-	}
-	#endif
+#if STARTUP_CONF_VERBOSE
+  {
+    int i;
+    PRINTF("Rime configured with address ");
+    for(i = 0; i < LINKADDR_SIZE - 1; i++) {
+      PRINTF("%02x:", linkaddr_node_addr.u8[i]);
+    }
+    PRINTF("%02x\n", linkaddr_node_addr.u8[i]);
+  }
+#endif
 
-	// Configure RF parameters
-	cc2520_set_pan_addr(IEEE802154_PANID, short_addr, ext_addr);
-	cc2520_set_channel(CC2520_RF_CHANNEL);
+  /* Configure RF parameters */
+  cc2520_set_pan_addr(IEEE802154_PANID, short_addr, ext_addr);
+  cc2520_set_channel(CC2520_RF_CHANNEL);
 }
 /*---------------------------------------------------------------------------*/
 /**
@@ -161,90 +160,89 @@ set_rf_params(void)
 void
 contiki_main(void *pv_parameters)
 {
-	leds_init();
+  leds_init();
 
-	// Output platform information
-	PUTS(CONTIKI_VERSION_STRING);
-	PRINTF("%s\n\n", PLATFORM_STRING);
+  /* Output platform information */
+  PUTS(CONTIKI_VERSION_STRING);
+  PRINTF("%s\n\n", PLATFORM_STRING);
 
-	// Initialize cc32xx wireless driver and fade red led
-	wifi_init();
-	fade(LEDS_RED);
+  /* Initialize cc32xx wireless driver and fade red led */
+  wifi_init();
+  fade(LEDS_RED);
 
-	// Initialize watch dog subsystem
-	watchdog_init();
+  /* Initialize watch dog subsystem */
+  watchdog_init();
 
-	// Initialize clock system
-	clock_init();
-	rtimer_init();
+  /* Initialize clock system */
+  clock_init();
+  rtimer_init();
 
-	// Initialize process subsystem
-	process_init();
+  /* Initialize process subsystem */
+  process_init();
 
-	// Event timers must be started before ctimer_init
-	process_start(&etimer_process, NULL);
-	ctimer_init();
+  /* Event timers must be started before ctimer_init */
+  process_start(&etimer_process, NULL);
+  ctimer_init();
 
-	// button_sensor_init();
-	serial_line_init();
-	fade(LEDS_YELLOW);
+  /* button_sensor_init(); */
+  serial_line_init();
+  fade(LEDS_YELLOW);
 
-	// Setup ZigBee stack
-	PRINTF("Starting ZigBee Network\n");
-	PRINTF(" Net: ");
-	PRINTF("%s\n", NETSTACK_NETWORK.name);
-	PRINTF(" MAC: ");
-	PRINTF("%s\n", NETSTACK_MAC.name);
-	PRINTF(" RDC: ");
-	PRINTF("%s\n\n", NETSTACK_RDC.name);
+  /* Setup ZigBee stack */
+  PRINTF("Starting ZigBee Network\n");
+  PRINTF(" Net: ");
+  PRINTF("%s\n", NETSTACK_NETWORK.name);
+  PRINTF(" MAC: ");
+  PRINTF("%s\n", NETSTACK_MAC.name);
+  PRINTF(" RDC: ");
+  PRINTF("%s\n\n", NETSTACK_RDC.name);
 
-	// Initialize random number engine.
-	random_init(0);
+  /* Initialize random number engine. */
+  random_init(0);
 
-	// Initialize cc2520 driver and RF parameters
-	cc2520_init();
-	set_rf_params();
+  /* Initialize cc2520 driver and RF parameters */
+  cc2520_init();
+  set_rf_params();
 
-	// Initialize network stack
-	NETSTACK_RDC.init();
-	NETSTACK_MAC.init();
-	NETSTACK_NETWORK.init();
+  /* Initialize network stack */
+  NETSTACK_RDC.init();
+  NETSTACK_MAC.init();
+  NETSTACK_NETWORK.init();
 
 #if NETSTACK_CONF_WITH_IPV6
-	// Set IPv6 address
-	memcpy(&uip_lladdr.addr, &linkaddr_node_addr, sizeof(uip_lladdr.addr));
-	queuebuf_init();
+  /* Set IPv6 address */
+  memcpy(&uip_lladdr.addr, &linkaddr_node_addr, sizeof(uip_lladdr.addr));
+  queuebuf_init();
 
-	// Start TCP/IP stack
-	process_start(&tcpip_process, NULL);
+  /* Start TCP/IP stack */
+  process_start(&tcpip_process, NULL);
 
-	// Start IPv6 <--> IPv4 translator
-	// for CC32xx wireless network interface
-	ip64_init();
+  /* Start IPv6 <--> IPv4 translator */
+  /* for CC32xx wireless network interface */
+  ip64_init();
 #else
-	// Start TCP/IP stack
-	process_start(&tcpip_process, NULL);
+  /* Start TCP/IP stack */
+  process_start(&tcpip_process, NULL);
 
-	// Start CC32xx wifi driver process
-	process_start(&wifi_drv_process, NULL);
+  /* Start CC32xx wifi driver process */
+  process_start(&wifi_drv_process, NULL);
 #endif /* NETSTACK_CONF_WITH_IPV6 */
 
-  // process_start(&sensors_process, NULL);
-	autostart_start(autostart_processes);
+  /* process_start(&sensors_process, NULL); */
+  autostart_start(autostart_processes);
 
-	watchdog_start();
-	fade(LEDS_GREEN);
+  watchdog_start();
+  fade(LEDS_GREEN);
 
-	process_start(&blink_process, NULL);
+  process_start(&blink_process, NULL);
 
-	while(1)
-	{
-		// Reset watchdog
-		watchdog_periodic();
+  while(1) {
+    /* Reset watchdog */
+    watchdog_periodic();
 
-		// Handle polls and events
-		process_run();
-	}
+    /* Handle polls and events */
+    process_run();
+  }
 }
 /*---------------------------------------------------------------------------*/
 

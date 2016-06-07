@@ -32,7 +32,7 @@
 
 /**
  * \file
- * 	Platform configuration for the cc3200-launchxl platform.
+ *  Platform configuration for the cc3200-launchxl platform.
  */
 
 #ifndef PLATFORM_CONF_H_
@@ -51,15 +51,15 @@
  * changeable!
  */
 #define PLATFORM_HAS_LEDS   1
-// #define PLATFORM_HAS_BUTTON 1
+/* #define PLATFORM_HAS_BUTTON 1 */
 
 /**
  * LED port definitions
  *  @{
  */
-#define LEDS_CONF_GREEN  	GPIO_PIN_3
-#define LEDS_CONF_YELLOW  	GPIO_PIN_2
-#define LEDS_CONF_RED  		GPIO_PIN_1
+#define LEDS_CONF_GREEN   GPIO_PIN_3
+#define LEDS_CONF_YELLOW    GPIO_PIN_2
+#define LEDS_CONF_RED     GPIO_PIN_1
 /** @} */
 
 /**
@@ -75,7 +75,7 @@
  */
 #if NETSTACK_CONF_WITH_IPV6
 #undef UIP_FALLBACK_INTERFACE
-#define UIP_FALLBACK_INTERFACE 	ip64_uip_fallback_interface
+#define UIP_FALLBACK_INTERFACE  ip64_uip_fallback_interface
 #endif
 /** @} */
 
@@ -91,43 +91,43 @@
  * CC2520 SPI related definitions
  * @{
  */
-#define CC2520_CONF_SYMBOL_LOOP_COUNT	USEC_TO_LOOP(326)
+#define CC2520_CONF_SYMBOL_LOOP_COUNT USEC_TO_LOOP(326)
 
 /* GPIO06 - Output: SPI Chip Select (CS_N) */
-#define CC2520_CSN_PORT_BASE      		GPIOA0_BASE
-#define CC2520_CSN_PIN            		GPIO_PIN_6
+#define CC2520_CSN_PORT_BASE          GPIOA0_BASE
+#define CC2520_CSN_PIN                GPIO_PIN_6
 
 /* GPIO07 - Output: VREG_EN to CC2520 */
-#define CC2520_VREG_PORT_BASE	   		GPIOA0_BASE
-#define CC2520_VREG_PIN           		GPIO_PIN_7
+#define CC2520_VREG_PORT_BASE       GPIOA0_BASE
+#define CC2520_VREG_PIN               GPIO_PIN_7
 
 /*
  * CC2520 pin status emulation
  */
-#define CC2520_FIFOP_IS_1 			(cc2520_arch_getreg(CC2520_FSMSTAT1) & CC2520_FSMSTAT1_FIFOP)
-#define CC2520_FIFO_IS_1 			(cc2520_arch_getreg(CC2520_FSMSTAT1) & CC2520_FSMSTAT1_FIFO)
-#define CC2520_CCA_IS_1 			(cc2520_arch_getreg(CC2520_FSMSTAT1) & CC2520_FSMSTAT1_CCA)
-#define CC2520_SFD_IS_1   			(cc2520_arch_getreg(CC2520_FSMSTAT1) & CC2520_FSMSTAT1_SFD)
+#define CC2520_FIFOP_IS_1       (cc2520_arch_getreg(CC2520_FSMSTAT1) & CC2520_FSMSTAT1_FIFOP)
+#define CC2520_FIFO_IS_1      (cc2520_arch_getreg(CC2520_FSMSTAT1) & CC2520_FSMSTAT1_FIFO)
+#define CC2520_CCA_IS_1       (cc2520_arch_getreg(CC2520_FSMSTAT1) & CC2520_FSMSTAT1_CCA)
+#define CC2520_SFD_IS_1         (cc2520_arch_getreg(CC2520_FSMSTAT1) & CC2520_FSMSTAT1_SFD)
 
 /* CC2520 voltage regulator enable pin. */
-#define SET_VREG_ACTIVE()			MAP_GPIOPinWrite(CC2520_VREG_PORT_BASE, CC2520_VREG_PIN, CC2520_VREG_PIN);
-#define SET_VREG_INACTIVE()     	MAP_GPIOPinWrite(CC2520_VREG_PORT_BASE, CC2520_VREG_PIN, 0);
+#define SET_VREG_ACTIVE()     MAP_GPIOPinWrite(CC2520_VREG_PORT_BASE, CC2520_VREG_PIN, CC2520_VREG_PIN);
+#define SET_VREG_INACTIVE()       MAP_GPIOPinWrite(CC2520_VREG_PORT_BASE, CC2520_VREG_PIN, 0);
 
 /* The CC2520 reset pin. */
-#define SET_RESET_INACTIVE()   		clock_delay(5)
-#define SET_RESET_ACTIVE()   		clock_delay(5)
+#define SET_RESET_INACTIVE()      clock_delay(5)
+#define SET_RESET_ACTIVE()      clock_delay(5)
 
 /* CC2520 dummy external interrupt. */
-#define CC2520_FIFOP_INT_INIT()		cc2520_arch_fifop_int_init()
-#define CC2520_ENABLE_FIFOP_INT()	cc2520_arch_enable_fifop_int()
-#define CC2520_DISABLE_FIFOP_INT()	cc2520_arch_disable_fifop_int()
+#define CC2520_FIFOP_INT_INIT()   cc2520_arch_fifop_int_init()
+#define CC2520_ENABLE_FIFOP_INT() cc2520_arch_enable_fifop_int()
+#define CC2520_DISABLE_FIFOP_INT()  cc2520_arch_disable_fifop_int()
 #define CC2520_CLEAR_FIFOP_INT()
 
 /*
  * Use GPIO06 for controlling chip select (CSn)
  * otherwise SPI_CS of CC32xx controller is used
  */
-#define CC2520_USE_CSN_GPIO		0
+#define CC2520_USE_CSN_GPIO   0
 
 /*
  * Enable / Disable CC2520 access to the SPI bus.
@@ -135,22 +135,22 @@
  * ENABLE CSn (active low)
  */
 #if CC2520_USE_CSN_GPIO
-#define CC2520_SPI_ENABLE()     	do { MAP_GPIOPinWrite(CC2520_CSN_PORT_BASE, CC2520_CSN_PIN, 0); clock_delay(5); } while(0)
+#define CC2520_SPI_ENABLE()       do { MAP_GPIOPinWrite(CC2520_CSN_PORT_BASE, CC2520_CSN_PIN, 0); clock_delay(5); } while(0)
 #else
-#define CC2520_SPI_ENABLE()			do { spi_cs_enable(); clock_delay(5); } while(0)
+#define CC2520_SPI_ENABLE()     do { spi_cs_enable(); clock_delay(5); } while(0)
 #endif
 
 /* DISABLE CSn (active low) */
 #if CC2520_USE_CSN_GPIO
-#define CC2520_SPI_DISABLE()    	do { MAP_GPIOPinWrite(CC2520_CSN_PORT_BASE, CC2520_CSN_PIN, CC2520_CSN_PIN); clock_delay(5); } while(0)
+#define CC2520_SPI_DISABLE()      do { MAP_GPIOPinWrite(CC2520_CSN_PORT_BASE, CC2520_CSN_PIN, CC2520_CSN_PIN); clock_delay(5); } while(0)
 #else
-#define CC2520_SPI_DISABLE()		do { spi_cs_disable(); clock_delay(5); } while(0)
+#define CC2520_SPI_DISABLE()    do { spi_cs_disable(); clock_delay(5); } while(0)
 #endif
 
 /*
  * Platform MSP430 emulation for CC2520 driver
  */
-#define splhigh() 	0
+#define splhigh()   0
 #define splx(arg)
 
 /** @} */

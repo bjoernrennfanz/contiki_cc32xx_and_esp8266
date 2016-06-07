@@ -76,7 +76,7 @@ void uart_write_byte(uint8_t uart, uint8_t b);
  * \param uart The UART instance to use (0 to \c UART_INSTANCE_COUNT - 1)
  * \param input A pointer to the function
  */
-void uart_set_input(uint8_t uart, int (* input)(unsigned char c));
+void uart_set_input(uint8_t uart, int (*input)(unsigned char c));
 
 void uart_isr(uint8_t uart);
 #define uart1_set_input(f) uart_set_input(UART1_CONF_UART, f)
