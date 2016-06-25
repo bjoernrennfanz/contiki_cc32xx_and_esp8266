@@ -13,4 +13,6 @@
 [submodule "platform/stm32nucleo-spirit1/stm32cube-lib"]
 	path = platform/stm32nucleo-spirit1/stm32cube-lib
 	url = https://github.com/STclab/stm32nucleo-spirit1-lib
-
+[submodule "cpu/cc32xx/lib/cc3200sdk"]
+	path = cpu/cc32xx/lib/cc3200sdk
+	url = https://github.com/bjoernrennfanz/cc3200sdk.git
